@@ -4,13 +4,55 @@ sidebar_position: 2
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# GUI Mode
-Find the console mode of tangerine in the installation folder.
-With this, you will be able to see verbosity. @max @seb on a un bouton dans l'UI qui permet de la réaffichée si jamais ou a oublié en le lancant ?
+# Tangerine API
+
+Please see [Tangerine Launching Mode](batch#tangerine-launching-modes) to find the best way for you to develop into Tangerine.
+- In the GUI, you will have a `command line` widget. You can copy past your code directly in it and press `Enter`.
+You can activate the terminal windows starting Tangerine to have verbosity.
+
+![new file content](./img/gui_console.png)
+
+- In batch mode, you can launch tangerine in a terminal adding your script as a parameter.
+See detail int [command line part](batch#batch-mode).
+```
+"E:/TEMP/tangerine/Tangerine Demo 2025/Tangerine/TangerineConsole.exe" --log_to_file --kernel release -l debug --no-hidden --no-gui "E:/TEMP/tangerine/Tangerine Demo 2025/after_opening_tangerine.py" "E:/TEMP/tangerine/Tangerine Demo 2025/hook.py" "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/three_capy.shot" "E:/TEMP/tangerine/Tangerine Demo 2025/after_loading_document.py"
+```
+![new file content](./img/console_batch_tangerine.png)
+
+## Modifers
+
+For a matter of optimisation and stack clarity, you will need to encasulate parts of script where you are editing values of a node.
+This way, Tangerine meta_nodal is able to find the appropriate moment compute everything and give you a feedback of your editing.
+
+:::tip
+
+Use a decorator to inject your modifiers easily
+```python
+def injectDefaultModifier(method):
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        # Search a modifier in args or kwargs
+        modifierInArgs = next(iter(arg for arg in args if isinstance(arg, Modifier)), None)
+        modifierInKwargs = kwargs.get("modifier", None)
+        modifier = modifierInArgs or modifierInKwargs or None
+        if not modifier:
+            # Create a default modifier
+            doc = get_document()
+            modifierName = method.__module__ + "." + method.__name__
+            with doc.modify(modifierName, undoable=Undoable.NO_AND_CLEAR_STACK) as modifier:
+                # Use modifier in method call
+                kwargs["modifier"] = modifier
+                return method(self, *args, **kwargs)
+        else:
+            return method(self, *args, **kwargs)
+
+    return wrapper
+```
+:::
 
 # Document
 
-A document is the object representing a '.tang' file in Tang application.
+A document is the object representing a '.tang' file in Tangerine application.
 A document contains data such as :
     - `anims` : Animation curves
     - `actions` : Plug values
@@ -31,7 +73,7 @@ An asset is : .....
 ### Open document
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Pyton Code GUI" label="Python Code Tangerine GUI" default>
 ```python
 # choose the references loading mode
 from PySide2.QtWidgets import QApplication
@@ -50,8 +92,20 @@ app = QApplication.instance()
 
 # for this example we choose to load every reference
 tangLoadMode = AssetLoadMode.ALL
-# UI mode : specify to tang we load shot file, so we have progression bar and relatives infos in tang
+# UI mode : specify to Tangerine we load shot file, so we have progression bar and relatives infos in tang
 app.main_window.import_shot_files([filePath], load_mode=tangLoadMode)
+```
+  </TabItem>
+  <TabItem value="Pyton Code batch" label="Python Code Tangerine batch" default>
+In this mode, no api.main_window is available. Use following code to load your shot.
+
+```python
+from tang_core.document.shot import Shot
+
+filePath = "[../../my_document_file_path.shot]"
+
+document = get_document()
+Shot.import_shot_files([filePath], document)
 ```
   </TabItem>
   <TabItem value="Package sample" label="Package sample">
@@ -76,7 +130,7 @@ app = QApplication.instance()
 
 # for this example we choose to load every reference
 tangLoadMode = AssetLoadMode.ALL
-# UI mode : specify to tang we load shot file, so we have progression bar and relatives infos in tang
+# UI mode : specify to Tangerine we load shot file, so we have progression bar and relatives infos in Tangerine
 app.main_window.import_shot_files([filePath], load_mode=tangLoadMode)
 ```
   </TabItem>
@@ -364,7 +418,7 @@ from tang_core.document.get_document import get_document
 
 doc = get_document()
 
-newfilePath = "[new_tang_file_path]" # path of tang asset file you want to use
+newfilePath = "[new_tang_file_path]" # path of Tangerine asset file you want to use
 nodeName = node.get_name()
 
 with document.modify("update reference path", undoable=Undoable.NO_AND_CLEAR_STACK) as modifier:
@@ -503,6 +557,96 @@ imagePath = "E:/TEMP/Maya/Tangerine Demo 2025/api_tests/playblast_folder/my_play
 
 Playblast.playblast(document, cameraNode, imagePath, settings=playblastSettings) # see previous part to create playblast settings
 ```
+
+## viewport subdivision
+
+To apply subdivision use following lines.
+Subdivision values you store here will be use as the value of subdivision needed if option "sooth" of Playblast settings is enabled. @max @seb vrai ça ?
+```python
+from tang_core.document.document import Undoable
+from tang_core.shape import SubdivisionOverride, set_general_subdivision_override
+from tang_core.document.get_document import get_document
+
+document = get_document()
+
+# choose subdivision value, 0 being no subdivisions.
+subdivOverride = SubdivisionOverride(2)
+with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) as modifier:
+    set_general_subdivision_override(subdivOverride, modifier)
+```
+
+If you need some mesh to have different subdivision properties, use these lines:
+
+<Tabs>
+  <TabItem value="Pyton Code" label="Python Code" default>
+```python
+from tang_core.document.document import Undoable
+from tang_core.shape import SubdivisionOverride, set_subdivision_override
+from tang_core.document.get_document import get_document
+
+document = get_document()
+
+subdivOverride = SubdivisionOverride(0)  # subdivOvveride could be 0, 1, 2 depending the number of subdivisions you need
+mesh = [mesh_node] # node of type Geometry
+with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) as modifier:
+    set_subdivision_override(mesh, subdivOvveride, modifier) # subdivOvveride could be 0, 1, 2 depending the number of subdivisions you need
+
+```
+  </TabItem>
+  <TabItem value="Package sample" label="Package sample">
+```python
+from tang_core.document.document import Undoable
+from tang_core.shape import SubdivisionOverride, set_subdivision_override, set_general_subdivision_override
+from tang_core.asset.asset_load_mode import AssetLoadMode
+from tang_core.document.get_document import get_document
+from PySide2.QtWidgets import QApplication
+from meta_nodal_py import Geometry
+
+# opening scene
+DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+filePath = DEMO_FOLDER_PATH + "/api_tests/three_capy.shot" # shot file
+app = QApplication.instance()
+app.main_window.import_shot_files([filePath], load_mode=AssetLoadMode.ALL)
+
+document = get_document()
+
+# set 0 subdivisions on set hierarchy
+assetNode = document.root().find("set_n01_white_neutral_int:white_neutral_int")
+# listing Geometry nodes in assetNode hierarchy
+subdivOverride = SubdivisionOverride(0)  # subdivOvveride could be 0, 1, 2 depending the number of subdivisions you need
+with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) as modifier:
+    for it in assetNode.depth_first_skippable_iterator():
+        node = it.node
+        if isinstance(node, Geometry):
+            print(node.get_name())
+            set_subdivision_override(node, subdivOverride, modifier)
+
+@seb @max je ne vois pas le resultat dans la vue plug, je vois toujours subdiv = 2. je sais que ya une subtilité sur l'affichage ou la subdiv réelle. vous pourriez regarder avec moi ce point ?
+
+# set 2 subdivision on all meshs of the scene
+subdivOverride = SubdivisionOverride(2)
+with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) as modifier:
+    set_general_subdivision_override(subdivOverride, modifier)
+```
+  </TabItem>
+</Tabs>
+
+# Tags
+
+Tags allow you to group elements of your hierarchy to access them quickly.
+Use them as a selection for different purpose such as [baking with tags](usecase/#bake tag for alembic)
+Tangerine uses it for example for UI fast selection.
+
+```python
+from tang_core.document.get_document import get_document
+
+children = getAllHierarchy(node, nodeType="mesh")
+for child in children:
+    # filter you nodes base on name, plugs, plug's value or more
+    tagger = get_document().tagger
+    tagger.create_tag(["name_of_tag"], show_in_gui=True)
+```
+
 # Export
 
 ## Alembic format
@@ -510,42 +654,6 @@ Playblast.playblast(document, cameraNode, imagePath, settings=playblastSettings)
 Bake tag are available to define if a node has to be baked in the alembic file or not.
 You can use it to optimise your alembic data, ensuring you have only the necessary for post production chain.
 See use cases ofr examples.
-
-### bake tag for alembic
-
-```python
-from tang_core.document.get_document import get_document
-
-def setBakeTagOnNode(bake, node, tagger=None):
-    """Helper function to set the :param node: tags "do_bake" and "do_not_bake" according to the :param bakable:
-    Perform tag existence check before tagging or untagging.
-    if you intend to use this method on a lot of nodes, please provide a tagger with the tags "do_bake" and
-        "do_not bake" already created, for performance reasons.
-
-    :param bake: Wether the node shall be tagged bakable or not.
-    :type bake: bool
-    :param node: Tang node instance to change tags
-    :type node: Node
-    :param tagger: Tagger instance to avoid create a new one each time, defaults to None
-    :type tagger: Tagger, Optional
-    """
-
-    if not tagger:
-        tagger = get_document().tagger
-        tagger.create_tag("do_not_bake", show_in_gui=False)
-        tagger.create_tag("do_bake", show_in_gui=False)
-
-    if bake:
-        if not tagger.has_tag("do_bake", node):
-            tagger.tag_node("do_bake", node)
-        if tagger.has_tag("do_not_bake", node):
-            tagger.untag_node("do_not_bake", node)
-    else:
-        if tagger.has_tag("do_bake", node):
-            tagger.untag_node("do_bake", node)
-        if not tagger.has_tag("do_not_bake", node):
-            tagger.tag_node("do_not_bake", node)
-```
 
 ### export to alembic
 
@@ -557,7 +665,7 @@ def setBakeTagOnNode(bake, node, tagger=None):
 from tang_core.bake import bake
 
 outputPath = "[exported_abc.abc]" # Path on the server where the alembic file will be saved. Folders should exists before export.
-nodes = mynode # Tang nodes to export as alembic
+nodes = mynode # Tangerine nodes to export as alembic
 
 locators = False
 writeFullMatrix = False
@@ -603,7 +711,7 @@ app.main_window.import_shot_files([filePath], load_mode=AssetLoadMode.ALL)
 document = get_document()
 
 outputPath = DEMO_FOLDER_PATH + "api_tests/my_exported_abc.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
-nodes = [document.root().find("character_n01_hui_lin:hui_lin")] # Tang nodes to export as alembic
+nodes = [document.root().find("character_n01_hui_lin:hui_lin")] # Tangerine nodes to export as alembic
 
 locators = False
 writeFullMatrix = False
@@ -655,7 +763,7 @@ We exported here a full hierarchy abc. See uses cases to have an example of expo
 </Tabs>
 
 
-## Export Tang file
+## Export Tangerine file
 
 Asset files .tang are generated from Mikan rigging toolkit.
 However, if you need to integrate an unrigged geometry, you may use the export asset feature to create an asset in a .tang file.
@@ -693,175 +801,278 @@ for node in doc.node_selection():
 nodeDict = {node.get_name(): node for node in nodes}
 print(nodeDict.keys())
 ```
+## Access Nodes, Controllers and Plugs
 
-## selected Nodes
+You will be able to manipulate nodes.
+Some nodes have a special function such as Asset nodes. These specific node are defined as the main node of a referenced asset by `Mikan`.
 
+<Tabs>
+  <TabItem value="Pyton Code" label="Python Code" default>
 ```python
+from tang_core.callbacks import Callbacks
 from tang_core.document.get_document import get_document
-from tang_core.asset.asset import Asset
-from meta_nodal_py import SceneGraphNode
+import meta_nodal_py as kl
 
-doc = get_document()
+# get a root node
+document = get_document()
+rootNodeName = "[name_of_a_root_node]" # this is the name of a root node
+assetNode = document.root().find(rootNodeName) # finding your node
 
-nodes = []
+# create a node
+trash = kl.SceneGraphNode(document.root(), "trash") @max @seb je ne le vois pas dans le node tree... j'ai un refresh à frocer? je ne vois pas dans notre code, je pense qu'on ne l'utilise que en batch.
 
-for node in doc.node_selection():
-    if type(node) == SceneGraphNode and Asset.is_asset(node.get_name()) and Asset.is_asset_loaded(node):
-        nodes.append(node)
+# delete a node
+trash.remove_from_parent()
+del trash
 
+# list children
+children = assetNode.get_children()
+for child in children:
+    print(child.get_full_name())
 
-nodeDict = {node.get_name(): node for node in nodes}
+# hide a node
+assetNode.show.set_value(False)
+
+# get a controller in asset hierarchy
+ctrl = "[name_of_control]" # name of a controler you are searching for
+node = Callbacks().find_controller_in_asset(assetNode, ctrl)
+# Plugs
+# list plugs
+plugs = node.get_dynamic_plugs()
+
+# get a plug on node
+attribute = "[name_of_attribute"]
+plug = node.get_plug(attribute)
 ```
-
-
-# Modifier
+  </TabItem>
+  <TabItem value="Package sample" label="Package sample">
 
 ```python
-def injectDefaultModifier(method):
-    @functools.wraps(method)
-    def wrapper(self, *args, **kwargs):
-        # Search a modifier in args or kwargs
-        modifierInArgs = next(iter(arg for arg in args if isinstance(arg, Modifier)), None)
-        modifierInKwargs = kwargs.get("modifier", None)
-        modifier = modifierInArgs or modifierInKwargs or None
-        if not modifier:
-            # Create a default modifier
-            doc = get_document()
-            modifierName = method.__module__ + "." + method.__name__
-            with doc.modify(modifierName, undoable=Undoable.NO_AND_CLEAR_STACK) as modifier:
-                # Use modifier in method call
-                kwargs["modifier"] = modifier
-                return method(self, *args, **kwargs)
-        else:
-            return method(self, *args, **kwargs)
+from tang_core.callbacks import Callbacks
+from tang_core.document.get_document import get_document
+from PySide2.QtWidgets import QApplication
+from tang_core.asset.asset_load_mode import AssetLoadMode
+import meta_nodal_py as kl
 
-    return wrapper
+# opening scene
+DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+filePath = DEMO_FOLDER_PATH + "/api_tests/three_capy.shot" # shot file
+app = QApplication.instance()
+tangLoadMode = AssetLoadMode.ALL
+app.main_window.import_shot_files([filePath], load_mode=tangLoadMode)
+
+document = get_document()
+
+# create a node
+trash = kl.SceneGraphNode(document.root(), "trash")
+
+# delete a node
+trash.remove_from_parent()
+del trash
+
+# get a root node
+rootNodeName = "character_n01_jb:jb" # this is the name of a root node
+assetNode = document.root().find(rootNodeName) # finding your node
+
+# list children
+children = assetNode.get_children()
+for child in children:
+    print(child.get_full_name())
+
+# hide a node
+assetNode.show.set_value(False)
+
+# get a controller in asset hierarchy
+ctrl = "move" # name of a controler you are searching for
+ctrlNode = Callbacks().find_controller_in_asset(assetNode, ctrl)
+
+# Plugs
+# list plugs
+nodePlugs = ctrlNode.get_dynamic_plugs()
+for plug in nodePlugs:
+    print("%s.%s" % (ctrlNode, plug.get_name()))
+
+# get a specific attribut plug
+attribute = "tx"
+plug = ctrlNode.get_plug(attribute)
+
+print(plug.get_full_name())
 
 ```
+  </TabItem>
+</Tabs>
+
+
 # Animation
 
+## import Animation, Anim layers and contraints from file
+
+To come
+
+## list animated plugs, considering each anim layer
+
+<Tabs>
+  <TabItem value="Pyton Code" label="Python Code" default>
 ```python
-def getAnimatedPlugs(self, plug, layers=[]):
-        """Return a list of plug with animation, considering anim layers."""
-        # get plug if animated, or get associated layers plugs instead if plug is connected to layers
-        if has_layer_plugs(plug):
-            animatedPlugs = []
-            for layer in layers:
-                layer_plug = former_plug_to_layer_plug(plug, layer)
-                if layer_plug:
-                    anim_node = find_anim_node(layer_plug)
-                    if anim_node:
-                        animatedPlugs.append(layer_plug)
-            return animatedPlugs
-        else:
-            anim_node = find_anim_node(plug)
-            if anim_node:
-                return [plug]
-        return []
+```
+  </TabItem>
+  <TabItem value="Package sample" label="Package sample">
+```python
+from tang_core.anim import find_anim_node
+    from tang_core.layer import former_plug_to_layer_plug, has_layer_plugs
+from tang_core.callbacks import Callbacks
 
+def getAnimatedPlugs(plug)
+    """Return a list of plug with animation, considering anim layers."""
+    # get plug if animated, or get associated layers plugs instead if plug is connected to layers
+    if has_layer_plugs(plug):
+        animatedPlugs = []
+        for layer in layers:
+            layer_plug = former_plug_to_layer_plug(plug, layer)
+            if layer_plug:
+                anim_node = find_anim_node(layer_plug)
+                if anim_node:
+                    animatedPlugs.append(layer_plug)
+        return animatedPlugs
+    else:
+        anim_node = find_anim_node(plug)
+        if anim_node:
+            return [plug]
+    return []
 
-    def importAnimation(self, animDict=None, cstrDicts=None, offset=0):
-        animDict = animDict or {}
-        cstrDicts = cstrDicts or {}
-        doc = get_document()
+ctrlNames = ["world", "move", "c_fly", "c_center", "c_camera_pos"] # filtering on nodes
+attrNames = ["tx", "ty", "tz", "rx", "ry", "rz"] # filtering on attributs
 
-        modifierMessage = "pipeline : import asset animation"
-        if offset:
-            modifierMessage += " with offset %s" % offset
-        with doc.modify(modifierMessage, undoable=Undoable.YES) as modifier:
-            globalConstraintNode = get_shot_constraints(modifier=modifier)
-            for cstrDict in cstrDicts:
-                # remove asset constraint first
-                controller = Callbacks().find_controller_in_asset(
-                    doc.root().find(cstrDict["constrained"]["asset"]), cstrDict["constrained"]["node_key"]
+# parsing scene nodes to find plug with animation
+rootNodes = getRootNodes(assetType=True) # get this method definition
+for rootNode in rootNodes:
+    for ctrl in Callbacks().get_all_controllers_in_asset(rootNode):
+        plugs = [plug for plug in ctrl.get_plugs() if plug.get_name() in attrNames]
+        for plug in plugs:
+            animatedPlugs = soft.getAnimatedPlugs(plug, layers=layers)
+            for animatedPlug in animatedPlugs:
+                anim_node = find_anim_node(animatedPlug)
+```
+  </TabItem>
+</Tabs>
+
+# animation
+##TODO
+```python
+def importAnimation(self, animDict=None, cstrDicts=None, offset=0):
+    animDict = animDict or {}
+    cstrDicts = cstrDicts or {}
+    doc = get_document()
+
+    modifierMessage = "pipeline : import asset animation"
+    if offset:
+        modifierMessage += " with offset %s" % offset
+    with doc.modify(modifierMessage, undoable=Undoable.YES) as modifier:
+        globalConstraintNode = get_shot_constraints(modifier=modifier)
+        for cstrDict in cstrDicts:
+            # remove asset constraint first
+            controller = Callbacks().find_controller_in_asset(
+                doc.root().find(cstrDict["constrained"]["asset"]), cstrDict["constrained"]["node_key"]
+            )
+
+            if controller and is_constrained(controller):
+                constraint = get_constraint(controller)
+                remove_shot_constraint(constraint, modifier)
+
+            # only keep targets that exist in Tangerine
+            constraintTargetsNodes = []
+            for target in cstrDict["targets"]:
+                targetNode = Callbacks().find_controller_in_asset(
+                    doc.root().find(target["asset"]), target["node_key"]
                 )
+                if targetNode is not None:
+                    constraintTargetsNodes.append(targetNode)
 
-                if controller and is_constrained(controller):
-                    constraint = get_constraint(controller)
-                    remove_shot_constraint(constraint, modifier)
+            constraintName = cstrDict["name"]
+            existingConstraintName = [const.get_name() for const in shot_constraints(doc)]
 
-                # only keep targets that exist in Tang
-                constraintTargetsNodes = []
-                for target in cstrDict["targets"]:
-                    targetNode = Callbacks().find_controller_in_asset(
-                        doc.root().find(target["asset"]), target["node_key"]
-                    )
-                    if targetNode is not None:
-                        constraintTargetsNodes.append(targetNode)
+            if constraintName in existingConstraintName:
+                index = 1
+                while (constraintName + str(index)) in existingConstraintName:
+                    index += 1
+                constraintName = constraintName + str(index)
 
-                constraintName = cstrDict["name"]
-                existingConstraintName = [const.get_name() for const in shot_constraints(doc)]
-
-                if constraintName in existingConstraintName:
-                    index = 1
-                    while (constraintName + str(index)) in existingConstraintName:
-                        index += 1
-                    constraintName = constraintName + str(index)
-
-                constraintAxes = TransformAxes(*cstrDict["axes"])
-                constraintType = CONSTRAINT_TYPE_BY_NAME.get(cstrDict["type"].lower(), None)
-                if not controller or not constraintTargetsNodes or not constraintType:
-                    continue
-                # use tang api now instead of json interpretation to avoid refacto due to some tang changes
-                add_shot_constraint(
-                    controller,
-                    constraintTargetsNodes,
-                    modifier,
-                    name=constraintName,
-                    axes=constraintAxes,
-                    add_key=False,
-                    constraint_type=constraintType,
-                    select=False,
-                )
-            for assetName, actionDict in animDict.items():
-                node = doc.root().find(assetName)
-                if node is not None:
-                    action = Action(node.get_name())
-                    constraintAction = Action("constraint_" + node.get_name())
-
-                    actionDict, constraintActionDict = self.extractConstraintActionFromAssetAction(
-                        node.get_name(), actionDict, doc
-                    )
-                    action.init_from_json_dict(actionDict)
-                    constraintAction.init_from_json_dict(constraintActionDict)
-                    if offset:
-                        action.apply(node, modifier, mode=Merge.replace_all_at_time, target_frame=offset)
-                        constraintAction.apply(
-                            globalConstraintNode, modifier, mode=Merge.replace_all_at_time, target_frame=offset
-                        )
-                    else:
-                        action.apply(node, modifier)
-                        constraintAction.apply(globalConstraintNode, modifier)
-                else:
-                    logger.info("Node %s not found to add action", assetName)
-
-    def extractConstraintActionFromAssetAction(self, nodeName, actionDict, doc):
-        """
-        Method to gather constraint anim previously stored in asset action and now must be add to the global constraint node, so it read the node action to remove constraint info and store them in a new dict to create another action.
-        """
-        plugNames = {}
-        for const in shot_constraints(doc):
-            constraintedNodeInfos = controller_to_json_data(get_constrained(const))
-            if constraintedNodeInfos["asset"] != nodeName:
+            constraintAxes = TransformAxes(*cstrDict["axes"])
+            constraintType = CONSTRAINT_TYPE_BY_NAME.get(cstrDict["type"].lower(), None)
+            if not controller or not constraintTargetsNodes or not constraintType:
                 continue
-            plugNames[constraintedNodeInfos["node_key"]] = const.get_name()
+            # use Tangerine api now instead of json interpretation to avoid refacto due to some Tangerine changes
+            add_shot_constraint(
+                controller,
+                constraintTargetsNodes,
+                modifier,
+                name=constraintName,
+                axes=constraintAxes,
+                add_key=False,
+                constraint_type=constraintType,
+                select=False,
+            )
+        for assetName, actionDict in animDict.items():
+            node = doc.root().find(assetName)
+            if node is not None:
+                action = Action(node.get_name())
+                constraintAction = Action("constraint_" + node.get_name())
 
-        constraintDict = {"anims": {}, "values": {}}
+                actionDict, constraintActionDict = self.extractConstraintActionFromAssetAction(
+                    node.get_name(), actionDict, doc
+                )
+                action.init_from_json_dict(actionDict)
+                constraintAction.init_from_json_dict(constraintActionDict)
+                if offset:
+                    action.apply(node, modifier, mode=Merge.replace_all_at_time, target_frame=offset)
+                    constraintAction.apply(
+                        globalConstraintNode, modifier, mode=Merge.replace_all_at_time, target_frame=offset
+                    )
+                else:
+                    action.apply(node, modifier)
+                    constraintAction.apply(globalConstraintNode, modifier)
+            else:
+                logger.info("Node %s not found to add action", assetName)
 
-        if plugNames is not None:
-            for key in ["anims", "values"]:
-                toRemove = []
-                for plugTocheck in actionDict[key]:
-                    if plugTocheck.split(".")[0] in plugNames:
-                        isConstraintOffset = ".target_" in plugTocheck and "_offset_" in plugTocheck
-                        isConstraintWeight = ".target_weight_" in plugTocheck
-                        if isConstraintOffset or isConstraintWeight:
-                            plugname = plugTocheck.split(".")[0]
-                            constraintDict[key][plugTocheck.replace("%s." % plugname, "%s." % plugNames[plugname])] = (
-                                actionDict[key][plugTocheck]
-                            )
-                            toRemove.append(plugTocheck)
-                for p in toRemove:
-                    actionDict[key].pop(p)
-        return actionDict, constraintDict
+def extractConstraintActionFromAssetAction(self, nodeName, actionDict, doc):
+    """
+    Method to gather constraint anim previously stored in asset action and now must be add to the global constraint node, so it read the node action to remove constraint info and store them in a new dict to create another action.
+    """
+    plugNames = {}
+    for const in shot_constraints(doc):
+        constraintedNodeInfos = controller_to_json_data(get_constrained(const))
+        if constraintedNodeInfos["asset"] != nodeName:
+            continue
+        plugNames[constraintedNodeInfos["node_key"]] = const.get_name()
+
+    constraintDict = {"anims": {}, "values": {}}
+
+    if plugNames is not None:
+        for key in ["anims", "values"]:
+            toRemove = []
+            for plugTocheck in actionDict[key]:
+                if plugTocheck.split(".")[0] in plugNames:
+                    isConstraintOffset = ".target_" in plugTocheck and "_offset_" in plugTocheck
+                    isConstraintWeight = ".target_weight_" in plugTocheck
+                    if isConstraintOffset or isConstraintWeight:
+                        plugname = plugTocheck.split(".")[0]
+                        constraintDict[key][plugTocheck.replace("%s." % plugname, "%s." % plugNames[plugname])] = (
+                            actionDict[key][plugTocheck]
+                        )
+                        toRemove.append(plugTocheck)
+            for p in toRemove:
+                actionDict[key].pop(p)
+    return actionDict, constraintDict
+```
+
+## Restarting Tangerine
+Restart tangerine opening the filePath given
+```python
+filePath = "./my_tang_file.tang"
+
+app = get_tang_app()
+args = app.tang_cmd_with_same_config(
+    load_mode=AssetLoadMode.SAVED, extra_args=["--opensave=open", "--filePath=%s" % filePath]
+)
+app.restart_tang(args)
 ```
