@@ -10,14 +10,14 @@ Please see [Tangerine Launching Mode](batch#tangerine-launching-modes) to find t
 - In the GUI, you will have a `command line` widget. You can copy past your code directly in it and press `Enter`.
 You can activate the terminal windows starting Tangerine to have verbosity.
 
-![new file content](./img/gui_console.png)
+![gui console](./img/gui_console.png)
 
 - In batch mode, you can launch tangerine in a terminal adding your script as a parameter.
 See detail int [command line part](batch#batch-mode).
 ```
 "E:/TEMP/tangerine/Tangerine Demo 2025/Tangerine/TangerineConsole.exe" --log_to_file --kernel release -l debug --no-hidden --no-gui "E:/TEMP/tangerine/Tangerine Demo 2025/after_opening_tangerine.py" "E:/TEMP/tangerine/Tangerine Demo 2025/hook.py" "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/three_capy.shot" "E:/TEMP/tangerine/Tangerine Demo 2025/after_loading_document.py"
 ```
-![new file content](./img/console_batch_tangerine.png)
+![console tangerine](./img/console_batch_tangerine.png)
 
 ## Modifers
 
