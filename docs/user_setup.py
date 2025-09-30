@@ -5,7 +5,7 @@
 # you could use it as following adding custom menus in Tangerine menu bar
 
 LIBRARY_PATH = "my/library/main/folder/path/"
-
+print("user_setup execution")
 try:
     from PySide2.QtWidgets import QApplication
 except ImportError:

@@ -1,7 +1,7 @@
 ---
 sidebar_position: 4
 ---
-# In and Outs
+# Tangerine Outputs
 
 Output formats of Tangerine are Alembic files and Usd file.
 
@@ -50,6 +50,7 @@ You have several possibilities to import your Alembic.
   <summary>Import to current selection</summary>
   <details>
     <summary>Add option</summary>
+
     Import to current selection with add option create :
     - An Alembic node
     - Only nodes that does not exists in actual hierarchy but exists in .abc file
@@ -59,6 +60,7 @@ You have several possibilities to import your Alembic.
   </details>
   <details>
     <summary>Merge option</summary>
+
     Import to current selection with merge option create :
     - An Alembic node
     - The full hierarchy of nodes contained in alembic file, in Maya format (transform, meshs, locators, ...)
@@ -172,4 +174,3 @@ selectionDict[node] = abcItems
 
 Blender is used for lighting, rendering and more.
 You can load alembics from Tangerine to [Blender](https://docs.blender.org/manual/en/latest/files/import_export/alembic.html#importing-alembic-files).
-

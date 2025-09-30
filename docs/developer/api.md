@@ -73,7 +73,7 @@ An asset is : .....
 ### Open document
 
 <Tabs>
-  <TabItem value="Pyton Code GUI" label="Python Code Tangerine GUI" default>
+  <TabItem value="Python Code GUI" label="Python Code Tangerine GUI" default>
 ```python
 # choose the references loading mode
 from PySide2.QtWidgets import QApplication
@@ -96,11 +96,12 @@ tangLoadMode = AssetLoadMode.ALL
 app.main_window.import_shot_files([filePath], load_mode=tangLoadMode)
 ```
   </TabItem>
-  <TabItem value="Pyton Code batch" label="Python Code Tangerine batch" default>
+  <TabItem value="Python Code batch" label="Python Code Tangerine batch" default>
 In this mode, no api.main_window is available. Use following code to load your shot.
 
 ```python
 from tang_core.document.shot import Shot
+from tang_core.document.get_document import get_document
 
 filePath = "[../../my_document_file_path.shot]"
 
@@ -147,25 +148,25 @@ endFrame = 100
 fps = 24
 
 # creating a document
-doc = get_document()
-doc.init_new(start_frame=startFrame, end_frame=endFrame, fps=fps) # @seb @ max ne prends pas le 100
+document = get_document()
+document.init_new(start_frame=startFrame, end_frame=endFrame, fps=fps) # @seb @ max ne prends pas le 100
 
 # setting actual document filePath. will be stored in a file only at save.
-doc.file_path = filePath
+document.file_path = filePath
 ```
 
 ### Save document
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 ```python
 from tang_core.document.shot import Shot
 from tang_core.document.get_document import get_document
 
 filePath = "[file_path]" # shot file
 
-doc = get_document()
-Shot.export_shot_file(filePath, doc)
+document = get_document()
+Shot.export_shot_file(filePath, document)
 ```
   </TabItem>
   <TabItem value="Package sample" label="Package sample">
@@ -176,8 +177,8 @@ from tang_core.document.get_document import get_document
 DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
 filePath = DEMO_FOLDER_PATH + "/api_tests/my_saved_shot_2.shot"
 
-doc = get_document()
-Shot.export_shot_file(filePath, doc)
+document = get_document()
+Shot.export_shot_file(filePath, document)
 ```
 As a result, a .shot file is created
 ![new file content](./img/my_saved_shot.png)
@@ -189,7 +190,7 @@ As a result, a .shot file is created
 Custom data can be added to document using file infos as following.
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 ```python
 from tang_core.document.get_document import get_document
 
@@ -262,7 +263,7 @@ doc.import_abc_in_new_asset(filePath, namespace=namespace)
 
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 ```python
 
 from tang_core.asset.asset import Asset
@@ -280,17 +281,17 @@ def getRootNodes(includeUnloaded=False, asDict=False, assetType=False):
         :type assetType: bool, defaults to False.
         :rtype: list[node] or dict{name: node} (see :param asDict:).
         """
-        doc = get_document()
+        document = get_document()
 
         if assetType:
-            nodes = list(Asset.loaded_assets(doc))
+            nodes = list(Asset.loaded_assets(document))
 
             if includeUnloaded:
-                nodes += list(Asset.unloaded_assets(doc))
+                nodes += list(Asset.unloaded_assets(document))
         else:
             assert not includeUnloaded, "Only Asset nodes can be unloaded."
 
-            nodes = doc.root().get_children()
+            nodes = document.root().get_children()
 
         if asDict:
             return {node.get_name(): node for node in nodes}
@@ -349,7 +350,7 @@ doc.import_nodes(namespace + ":" + topnode, filePath, modifier=modifier)
 
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 ```python
 from tang_core.document.get_document import get_document
 from tang_core.document.document import Undoable
@@ -411,7 +412,7 @@ It is necessary to remove any pointer to a node that you want to remove.
 ### edit references path
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 ```python
 from tang_core.asset.asset_loader import AssetLoader
 from tang_core.document.get_document import get_document
@@ -451,7 +452,7 @@ with document.modify("update reference path", undoable=Undoable.NO_AND_CLEAR_STA
 ### rename reference node
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 ```python
 from tang_core.document.document import Undoable
 from tang_core.document.get_document import get_document
@@ -578,7 +579,7 @@ with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) a
 If you need some mesh to have different subdivision properties, use these lines:
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 ```python
 from tang_core.document.document import Undoable
 from tang_core.shape import SubdivisionOverride, set_subdivision_override
@@ -659,7 +660,7 @@ See use cases ofr examples.
 
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 
 ```python
 from tang_core.bake import bake
@@ -807,7 +808,7 @@ You will be able to manipulate nodes.
 Some nodes have a special function such as Asset nodes. These specific node are defined as the main node of a referenced asset by `Mikan`.
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 ```python
 from tang_core.callbacks import Callbacks
 from tang_core.document.get_document import get_document
@@ -912,7 +913,7 @@ To come
 ## list animated plugs, considering each anim layer
 
 <Tabs>
-  <TabItem value="Pyton Code" label="Python Code" default>
+  <TabItem value="Python Code" label="Python Code" default>
 ```python
 ```
   </TabItem>
