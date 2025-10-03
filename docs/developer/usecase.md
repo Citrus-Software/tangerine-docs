@@ -1,4 +1,4 @@
----
+Case---
 sidebar_position: 3
 ---
 import Tabs from '@theme/Tabs';
@@ -17,7 +17,7 @@ You can generate these files from another software and import them into Tangerin
 - Use the menu: `File > Load Action on Selected Asset...`
 - Choose the `.action` file containing animation on controls that match the selected asset's controls.
 
-@seb @max c'est quoi la version simple de l'import de json action, juste ce qu'il y a derrière le bouton laod action on selected asset ^^ ?
+
 
 ### Uploading in Tangerine
 
@@ -25,81 +25,16 @@ Here is an example of a simple `.action` file containing set values and animatio
 For more advanced examples, including importing constraints, dummies, and other animation types, ask for further guidance.
 
 ```python
-def importAnimation(animDict=None, cstrDicts=None, offset=0):
-    animDict = animDict or {}
-    cstrDicts = cstrDicts or {}
-    doc = get_document()
 
-    modifierMessage = "pipeline : import asset animation"
-    if offset:
-        modifierMessage += " with offset %s" % offset
-    with doc.modify(modifierMessage, undoable=Undoable.YES) as modifier:
-        globalConstraintNode = get_shot_constraints(modifier=modifier)
-        for cstrDict in cstrDicts:
-            # remove asset constraint first
-            controller = Callbacks().find_controller_in_asset(
-                doc.root().find(cstrDict["constrained"]["asset"]), cstrDict["constrained"]["node_key"]
-            )
-
-            if controller and is_constrained(controller):
-                constraint = get_constraint(controller)
-                remove_shot_constraint(constraint, modifier)
-
-            # only keep targets that exist in Tang
-            constraintTargetsNodes = []
-            for target in cstrDict["targets"]:
-                targetNode = Callbacks().find_controller_in_asset(
-                    doc.root().find(target["asset"]), target["node_key"]
-                )
-                if targetNode is not None:
-                    constraintTargetsNodes.append(targetNode)
-
-            constraintName = cstrDict["name"]
-            existingConstraintName = [const.get_name() for const in shot_constraints(doc)]
-
-            if constraintName in existingConstraintName:
-                index = 1
-                while (constraintName + str(index)) in existingConstraintName:
-                    index += 1
-                constraintName = constraintName + str(index)
-
-            constraintAxes = TransformAxes(*cstrDict["axes"])
-            constraintType = CONSTRAINT_TYPE_BY_NAME.get(cstrDict["type"].lower(), None)
-            if not controller or not constraintTargetsNodes or not constraintType:
-                continue
-            # use tang api now instead of json interpretation to avoid refacto due to some tang changes
-            add_shot_constraint(
-                controller,
-                constraintTargetsNodes,
-                modifier,
-                name=constraintName,
-                axes=constraintAxes,
-                add_key=False,
-                constraint_type=constraintType,
-                select=False,
-            )
-        for assetName, actionDict in animDict.items():
-            node = doc.root().find(assetName)
-            if node is not None:
-                action = Action(node.get_name())
-                constraintAction = Action("constraint_" + node.get_name())
-
-                actionDict, constraintActionDict = extractConstraintActionFromAssetAction(
-                    node.get_name(), actionDict, doc
-                )
-                action.init_from_json_dict(actionDict)
-                constraintAction.init_from_json_dict(constraintActionDict)
-                if offset:
-                    action.apply(node, modifier, mode=Merge.replace_all_at_time, target_frame=offset)
-                    constraintAction.apply(
-                        globalConstraintNode, modifier, mode=Merge.replace_all_at_time, target_frame=offset
-                    )
-                else:
-                    action.apply(node, modifier)
-                    constraintAction.apply(globalConstraintNode, modifier)
-            else:
-                logger.info("Node %s not found to add action", assetName)
+file_path = "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/maya_layout/character_n01_jb.action"
+action = Action("my_action")
+action.load(file_path)
+with get_document().modify('Apply Action') as modifier:
+    action.apply(asset_node, modifier)
 ```
+A shot can have an action per asset (values on controls), and shot's rig : dummies, constraints, clusters.
+If needed, ask for sample to load the shot's rig values in python.
+
 ### Exporting `.action` from Maya: Simple Animation
 
 Animations without deformations can be easily stored in a `.action` file using the following dictionary:
@@ -203,7 +138,7 @@ Animations without deformations can be easily stored in a `.action` file using t
   </TabItem>
 </Tabs>
 
-You can now store this Tangerine compatible animation file into a `.action`
+You can now store this Tangerine compatible animation dictionnaryle into a `.action`
 ```python
 import json
 
@@ -245,8 +180,6 @@ filePath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/built_shot.shot"
 shot.export_file(filePath)
 
 ```
-@max @seb c'est quoi la dif entre les shot et le doc. Ya des element en plus dans le doc je dirais. Mais si je change le start et end du shot, je change celui du doc right ?
-
 :::tip
 Editing the frame range will force the cache to reload.
 In your workflow, if you need to change the frame range using the API, it is preferable to do this in the ASCII `.shot` file **before** loading it into Tangerine to minimize cache computation.
@@ -387,7 +320,7 @@ First exports almeibc files with custom content using tags
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
-            write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+            write_full_matrix=True,
             **frameRangeParams
         )
     except AttributeError:
@@ -404,7 +337,7 @@ First exports almeibc files with custom content using tags
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
-            write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+            write_full_matrix=True,
             **frameRangeParams
         )
     except AttributeError:
@@ -426,7 +359,7 @@ First exports almeibc files with custom content using tags
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
-            write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+            write_full_matrix=True,
             **frameRangeParams
         )
     except AttributeError:
@@ -447,7 +380,7 @@ First exports almeibc files with custom content using tags
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
-            write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+            write_full_matrix=True,
             **frameRangeParams
         )
     except AttributeError:
@@ -464,7 +397,7 @@ First exports almeibc files with custom content using tags
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
-            write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+            write_full_matrix=True,
             **frameRangeParams
         )
     except AttributeError:
@@ -665,7 +598,7 @@ You can bake the dynamics before exporting to preserve the correct results.
 ```python
 from tang_core.callbacks import Callbacks
 from tang_core.document.get_document import get_document
-from gemini.meta_nodal.lib import dynamic @seb c'est le nom gemini ? comme dans les logs
+from mikan.meta_nodal.lib import dynamic
 
 dynamicControllers = []
 
@@ -691,6 +624,7 @@ if dynamicControllers:
 
 Use a post-processing step to add a HUD to your images as needed.
 A sample setup can be provided if required.
+You can also use this post script to modify image padding as needed.
 
 
 ## Callback Processes
@@ -704,11 +638,10 @@ When you want to execute code after an action manually triggered from the UI:
 - Replace the native menu button with your own [(see here).](general#custom-menus)
 - Insert your custom code around the base action called by the button.
 
-Below is the code executed behind the default buttons.
+Below is the code executed behind the default items.
 
-@seb @max j'ai besoin du code des boutons
-"File > Load Shot" : ``
-"File > Save Shot" : ``
+"File > Load Shot" : `` @sixtine complete
+"File > Save Shot" : `Shot.export_shot_file(file_path, get_document())`
 "File > New" : ``
 "Playblast > With playblast Settings > Persp" : ``
 

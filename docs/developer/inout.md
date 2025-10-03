@@ -178,3 +178,4 @@ selectionDict[node] = abcItems
 Blender is used for lighting, rendering, and other tasks.
 You can import Alembic files exported from Tangerine into [Blender](https://docs.blender.org/manual/en/latest/files/import_export/alembic.html#importing-alembic-files).
 
+...detailes to come...

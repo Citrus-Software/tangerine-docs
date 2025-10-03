@@ -170,7 +170,7 @@ def getAnimLayers(layersInfos):
 
 def storeAnimationDict():
     """
-    Store in json file tang animation et set attribute on controls defined with gemini attributes.
+    Store in json file tang animation et set attribute on controls defined with mikan attributes.
     One json file will be exported per asset (top node with gem attr asset) at
     sub folder "layout-animation" in work anim folder of shot.
     Some maya attribute could not exists in tang (or wont have the same name) and won't be intepretd.

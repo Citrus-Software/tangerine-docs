@@ -333,17 +333,21 @@ skydome_n01_skydome_day:skydome_day
 
 ### Add references
 
-@seb @max, on a toujours une limite de un seul top node dans l'abc ? et est ce que on doit connaitre le nom du top node? ou ya une autre méthodo ?
+An asset file should always have one and only one topnode.
+See below how to reference an asset into a shot.
+
 ```python
 from tang_core.document.get_document import get_document
 
 @modifier
 doc = get_document()
 
-filePath = "./my_abc_file.abc"
-namespace = "character_cube"
+filePath = "./capy_jb.tang"
+namespace = "character"
 
-doc.import_nodes(namespace + ":" + topnode, filePath, modifier=modifier)
+# import_nodes(self, name, path, namespace='', modifier=None, asset_state=AssetState.LOADED)
+doc.import_nodes(None, filePath, modifier=modifier, namespace=namespace)
+@sixtine to test
 ```
 ### Remove references
 
@@ -389,10 +393,9 @@ node = document.root().find("character_n01_hui_lin:hui_lin") # only asset nodes 
 
 with document.modify("removing reference", undoable=Undoable.NO_AND_CLEAR_STACK) as modifier:
 
-    document = get_document()
-
     # We delete pointers to the node
-    nodeName = node.get_name() #@seb et @max, si je fais full name il m'envoie boulé.
+    nodeName = node.get_name() # name of the top node of the asset
+    print("Removing node %s" % nodeName)
     del node
 
     document.unload_asset_from_name(nodeName, modifier=modifier)
@@ -552,7 +555,7 @@ cameraNode = document.root().find(camera)
 if not cameraNode:
     raise PlayblastTangException("No camera for playblast. Please load a camera before launching a playblast.")
 
-imagePath = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_tests/playblast_folder/my_playblast_images.jpg" # folder have to exists before to launch the playblast @max @seb pas de message ni de log si le folder n'existe pas de sortie. normal ? Comment fait-on pour spécifier le padding ?
+imagePath = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_tests/playblast_folder/my_playblast_images.jpg"
 
 Playblast.playblast(document, cameraNode, imagePath, settings=playblastSettings) # see previous part to create playblast settings
 ```
@@ -561,7 +564,7 @@ Playblast.playblast(document, cameraNode, imagePath, settings=playblastSettings)
 
 To apply subdivision, use the following lines of code.
 The subdivision values you set here will be used if the "smooth" option in the Playblast settings is enabled.
-@max @seb vrai ça ?
+@max verifier valeur de subdiv et playblast, add image
 ```python
 from tang_core.document.document import Undoable
 from tang_core.shape import SubdivisionOverride, set_general_subdivision_override
@@ -621,7 +624,7 @@ with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) a
             print(node.get_name())
             set_subdivision_override(node, subdivOverride, modifier)
 
-@seb @max je ne vois pas le resultat dans la vue plug, je vois toujours subdiv = 2. je sais que ya une subtilité sur l'affichage ou la subdiv réelle. vous pourriez regarder avec moi ce point ?
+@max je ne vois pas le resultat dans la vue plug, je vois toujours subdiv = 2. je sais que ya une subtilité sur l'affichage ou la subdiv réelle. vous pourriez regarder avec moi ce point ?
 
 # set 2 subdivision on all meshs of the scene
 subdivOverride = SubdivisionOverride(2)
@@ -683,7 +686,7 @@ try:
         write_uv=True, # possible to disblae uv writing
         document=document,
         sub_samples=subsamples,
-        write_full_matrix=writeFullMatrix, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+        write_full_matrix=writeFullMatrix, # force exporting matrix values instead of each component values
         **frameRangeParams
     )
 except AttributeError:
@@ -751,7 +754,7 @@ try:
         write_uv=True, # possible to disblae uv writing
         document=document,
         sub_samples=subsamples,
-        write_full_matrix=writeFullMatrix, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+        write_full_matrix=writeFullMatrix,
         **frameRangeParams
     )
 except AttributeError:
@@ -777,8 +780,7 @@ filePath = DEMO_FOLDER_PATH + "/api_tests/my_node_asset_file.abc"
 document = get_document()
 node = document.root().find("character_jb:capy_modeling")
 
-document.export_main_node(node, path) @seb et @max ne fonctionn  plus, normal ? fonction export_main_node n'existe plus error message
-
+document.export_asset(node, path) @sixtine test
 ```
 
 ## Nodes
@@ -809,6 +811,9 @@ Some nodes have special functions, such as Asset nodes. These specific nodes are
 
 <Tabs>
   <TabItem value="Python Code" label="Python Code" default>
+
+  Be sure this script is a startup script, so UI will update at the end only once.
+  If not, use a modifier for your creation nodes @sixtine
 ```python
 from tang_core.callbacks import Callbacks
 from tang_core.document.get_document import get_document
@@ -820,7 +825,7 @@ rootNodeName = "[name_of_a_root_node]" # this is the name of a root node
 assetNode = document.root().find(rootNodeName) # finding your node
 
 # create a node
-trash = kl.SceneGraphNode(document.root(), "trash") @max @seb je ne le vois pas dans le node tree... j'ai un refresh à frocer? je ne vois pas dans notre code, je pense qu'on ne l'utilise que en batch.
+trash = kl.SceneGraphNode(document.root(), "trash")
 
 # delete a node
 trash.remove_from_parent()
@@ -975,13 +980,16 @@ This tool is called "animation reference" and can be pre-configured in the pipel
 
 ```python
 document = get_document()
-imgPath = "E:/TEMP/Maya/Tangerine Demo 2025/api_tests/image_plane_sequence/anim_reference_image_plane.001.jpg" # @max @seb padding could be 4 or more ?
+imgPath = "E:/TEMP/Maya/Tangerine Demo 2025/api_tests/image_plane_sequence/anim_reference_image_plane.001.jpg"
+
 ref = document.animation_references.register(imgPath)
 ref.label = "animatic"
 ```
 
 If you need to create a specific image plane in your shot, you can create the following nodes by script.
 Adding it to your asset trough Mikan features would be the best practise but sometimes you only need the node in animation and want to keep your cameras `.tang` clean.
+
+...sample to come...
 
 ```python
 from tang_core.camera import create_image_plane
@@ -993,7 +1001,7 @@ image_plane_sequence_path = "E:/TEMP/Maya/Tangerine Demo 2025/api_tests/image_pl
 
 document = get_document()
 
-cameraName = "cameras/persp/Persp" # camera Shape node
+cameraName = "cameras/shot/Shot" # camera Shape node
 cameraNode = document.root().find(cameraName)
 
 cameraTransform = cameraNode.get_parent()

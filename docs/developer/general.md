@@ -5,35 +5,28 @@ sidebar_position: 1
 
 ## Tangerine Files
 
-## Tangerine Files
-
 The files handled by Tang, via the File menu, come in several types:
 
   - `.shot` files represent shots. This is the format animators use all the time.
-
   - `.tang` files represent assets. They are referenced by .shot files. Assets can be manually referenced in an empty shot during preproduction to build a scene, but in general animators do not work directly with `.tang` files.
-
   - `.action` files represent intermediate animation exports of an asset. They can be imported onto the same asset in another shot. They do not contain constraint data or layer creations, which are stored in external files.
   To transfer animation between shots, it is recommended to use the Library, as it provides greater flexibility and smoother integration for the animator.
 
 Additionally, some hidden files are created by Tang for internal use:
 
   - Pose and animation clip files from the Library
-
   - Layout and preference files
 
 Tang also indirectly handles other non-native file types:
 
   - `.abc` files (Alembic format) are baked animations, used later in the pipeline for rendering. This format is also used for meshes and rig curves, referenced from `.tang` files.
-
   - Texture files (PNG or JPEG)
-
   - Sound files (WAV)
 
 :::info
 Finally, Tangerine provides an auto-save feature, which stores directly in `.shot` format. Auto-saves are stored in the following folder:
 ```
-%TEMP%/tang/auto_saves @seb @max est ce que toujours vrai tang et pas tangerine ?
+%TEMP%/Tangerine/auto_saves
 ```
 :::
 
@@ -96,13 +89,11 @@ You will find an example in the demo-package.
 You can use scripting in GUI mode or in batch mode.
 
 `GUI Mode` : The main mode launch the application with main window only. These following code example are using this GUI Mode, using methods that will take in charge UI aspects (refreshing viewport, showing progres, etc).
+@sixtine log View available
 
 `GUI Console Mode` : A "console" mode with main window and console window is available to have verbosity and can be usefull in your developments.
 
 `Batch Mode` : The batch mode of tangerine is also available. Every methods that are linked to the UI application part won't be available in this mode. See our code example in "batch" page to adapt your scripts to batch mode. See [Batch mode guide](batch#batch-mode).
-
-@max @seb on a un bouton dans l'UI qui permet de la réaffichée si jamais ou a oublié en le lancant ?
-
 
 ### UI Mode
 
