@@ -19,10 +19,13 @@ See detail int [command line part](batch#batch-mode).
 ```
 ![console tangerine](./img/console_batch_tangerine.png)
 
+
 ## Modifers
 
-For a matter of optimisation and stack clarity, you will need to encasulate parts of script where you are editing values of a node.
-This way, Tangerine meta_nodal is able to find the appropriate moment compute everything and give you a feedback of your editing.
+For a matter of optimisation, stack clarity and engine and UI updates, you will need to encapsulate parts of script where you are modifying a document.
+When closing a modifier, Tangerine will call every needed callback to compute values and update UI.
+
+The only values of a document that do not need a modifier are `start_frame` and `end_frame`.
 
 :::tip
 
@@ -52,21 +55,14 @@ def injectDefaultModifier(method):
 
 # Document
 
-A document is the object representing a '.tang' file in Tangerine application.
-A document contains data such as :
-    - `anims` : Animation curves
-    - `actions` : Plug values
-    - timeline informations
-    - configurations informations (library path for example)
-    - additional file informations (custom saved data)
+A document is the object representing a '.shot' file in Tangerine application.
+A document has several attributes. Main ones are :
+    `start_frame`, `end_frame`, `file_path`, `fps`, `sound_path`, `sound_offset`
 
-A document can reference:
-- a sound file (wav format) @max @seb c'est quoi les caractéristiques encessaires son ?
-- alembic files @max @seb quel type alembic, ogawa uniquement ? version min ?
-- .tang files, rigged assets
+Every nodes references in a document will be under the `root` node.
 
-An asset is : .....
-@seb @max how to talk about this ?
+Any asset node loaded in the document will have a top-node under `root` and all it's hierarchy under.
+The top node of a reference is renamed using a namespace if needed.
 
 ## Files operations
 
@@ -115,7 +111,7 @@ Shot.import_shot_files([filePath], document)
 from PySide2.QtWidgets import QApplication
 from tang_core.asset.asset_load_mode import AssetLoadMode
 
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 
 # choose the references loading mode
 TANG_LOAD_MODES = {
@@ -138,22 +134,35 @@ app.main_window.import_shot_files([filePath], load_mode=tangLoadMode)
 </Tabs>
 
 ### Create new document
-```python
-from tang_core.asset.asset_load_mode import AssetLoadMode
-from tang_core.document.get_document import get_document
+<Tabs>
+  <TabItem value="Python Code GUI" label="Python Code Tangerine GUI" default>
+    ```python
+    from tang_gui.get_tang_window import get_tang_window
 
-# defining start and end frames of your shot
-startFrame = 1
-endFrame = 100
-fps = 24
+    # defining start and end frames of your shot
+    startFrame = 1
+    endFrame = 100
+    fps = 24
 
-# creating a document
-document = get_document()
-document.init_new(start_frame=startFrame, end_frame=endFrame, fps=fps) # @seb @ max ne prends pas le 100
+    get_tang_window().do_new_document(self, start_frame=startFrame, end_frame=endFrame, fps=fps):
+    ```
+  </TabItem>
+  <TabItem value="Python Code Batch" label="Python Code Tangerine Batch" default>
+    ```python
+    from tang_core.asset.asset_load_mode import AssetLoadMode
+    from tang_core.document.get_document import get_document
 
-# setting actual document filePath. will be stored in a file only at save.
-document.file_path = filePath
-```
+    # defining start and end frames of your shot
+    startFrame = 1
+    endFrame = 100
+    fps = 24
+
+    # creating a document
+    document = get_document()
+    document.init_new(start_frame=startFrame, end_frame=endFrame, fps=fps)
+    ```
+  </TabItem>
+</Tabs>
 
 ### Save document
 
@@ -174,7 +183,7 @@ Shot.export_shot_file(filePath, document)
 from tang_core.document.shot import Shot
 from tang_core.document.get_document import get_document
 
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 filePath = DEMO_FOLDER_PATH + "/api_tests/my_saved_shot_2.shot"
 
 document = get_document()
@@ -224,43 +233,33 @@ You can save again your file to see the added attribute in ascii.
   </TabItem>
 </Tabs>
 
-## Import alembic file
-@seb and @max comment o nexpliquerai les besoin de faire un asset plutôt qu'un juste load d'abc ? quel usage case? ou alors ça debloque quoi du point de vu tangerine ?
-J'ai le use case de on a pas de rig on veut loader un plaque ou un decors non riggé. Mais pourquoi enfait un asset et pas juste un load abc ?
+## Import Alembic File
 
-### option 1 : Load an alembic file in Tangerine
-@seb @max l'attribut automatic_instances c'est ok ce que je raconte ?
+Mikan is the recommended way to build a rig around geometry stored in an Alembic file.
+However, you might sometimes need to visualize geometry directly in Tangerine.
+Loading geometry without using Mikan to create a `.tang` asset file will only allow you to view it; you should **not** attempt to animate it.
+
+If you need to use the geometry for anything other than visualization, please use the [Mikan rigging toolbox](https://citrus-software.github.io/mikan-docs/introduction/about) to build a proper asset.
+
+
 ```python
 from meta_nodal_py import load_abc
 from tang_core.document.get_document import get_document
 
-doc = get_document()
+document = get_document()
 
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 filePath = DEMO_FOLDER_PATH + "/api_tests/capy_modeling.abc"
 
-# When creating the ReleaseModel of crowd assets, disable it.
-load_abc(doc.root(), filePath, automatic_instances=True) # automatic_instances can be disabled if needed to consider instances independantly
-```
-### option 2 : Create an asset around alembic file
+# create a abcReaderNode, connect nodes, and a basic rig around
+# automatic_instances can be disabled if needed to consider instances independantly
+load_abc(document.root(), abc_file_path, automatic_instances=True, force_anim_reader=True)
 
-To import alembic file containg geometry as an asset, use following lines.
-
-```python
-from tang_core.document.get_document import get_document
-
-doc = get_document()
-
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
-filePath = DEMO_FOLDER_PATH + "/api_tests/capy_modeling.abc"
-namespace = "character_jb"
-doc.import_abc_in_new_asset(filePath, namespace=namespace)
 ```
 
 ## Document references
 
-### list references
-
+### List references
 
 <Tabs>
   <TabItem value="Python Code" label="Python Code" default>
@@ -307,7 +306,7 @@ Let's try to get roots node in scene of demo package.
 from PySide2.QtWidgets import QApplication
 from tang_core.asset.asset_load_mode import AssetLoadMode
 
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 
 # opening the scene in tangerine
 filePath = DEMO_FOLDER_PATH + "/jade/jad_anim_217_001.shot" # shot file
@@ -320,7 +319,7 @@ for nodeName in nodesDict.keys():
     print(nodeName)
 
 ```
-As a result you will see in your tangerine's console :
+As a result you will see in your Tangerine's console :
 ```
 camera:cam
 character_n01_zhi_xuan:zhi_xuan
@@ -332,7 +331,7 @@ skydome_n01_skydome_day:skydome_day
   </TabItem>
 </Tabs>
 
-### adding references
+### Add references
 
 @seb @max, on a toujours une limite de un seul top node dans l'abc ? et est ce que on doit connaitre le nom du top node? ou ya une autre méthodo ?
 ```python
@@ -346,7 +345,7 @@ namespace = "character_cube"
 
 doc.import_nodes(namespace + ":" + topnode, filePath, modifier=modifier)
 ```
-### remove references
+### Remove references
 
 
 <Tabs>
@@ -378,7 +377,7 @@ from tang_core.asset.asset_load_mode import AssetLoadMode
 from tang_core.document.get_document import get_document
 from tang_core.document.document import Undoable
 
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 
 # opening the scene in tangerine
 filePath = DEMO_FOLDER_PATH + "/jade/jad_anim_217_001.shot" # shot file
@@ -409,7 +408,7 @@ It is necessary to remove any pointer to a node that you want to remove.
 `del node`
 :::
 
-### edit references path
+### Edit references path
 
 <Tabs>
   <TabItem value="Python Code" label="Python Code" default>
@@ -436,7 +435,7 @@ from tang_core.document.get_document import get_document
 
 doc = get_document()
 
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 newfilePath = DEMO_FOLDER_PATH + "/Jade/Assets/jad_release-anim_zhi-xuan_v000.tang"
 
 node = document.root().find("character_n01_hui_lin:hui_lin")
@@ -449,7 +448,7 @@ with document.modify("update reference path", undoable=Undoable.NO_AND_CLEAR_STA
   </TabItem>
 </Tabs>
 
-### rename reference node
+### Rename reference node
 
 <Tabs>
   <TabItem value="Python Code" label="Python Code" default>
@@ -475,7 +474,7 @@ from tang_core.asset.asset_load_mode import AssetLoadMode
 from tang_core.document.get_document import get_document
 from tang_core.document.document import Undoable
 
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 
 # opening the scene in tangerine
 filePath = DEMO_FOLDER_PATH + "/jade/jad_anim_217_001.shot" # shot file
@@ -504,12 +503,11 @@ with document.modify("rename_%s_to_%s" % (nodeName, newName), undoable=Undoable.
   </TabItem>
 </Tabs>
 
+## Playblasting
 
-# Playblasting
+### Create playblast settings
 
-## create playblast settings
-
-Create `PlayblastSettings` object to specify caracteristics of your playblast : ssao, camera, time limits, etc
+Create a `PlayblastSettings` object to specify the characteristics of your playblast, such as SSAO, camera, time range, and more.
 
 ```python
 from tang_core.playblast.playblast_settings import PlayblastSettings
@@ -539,7 +537,7 @@ playblastSettings.ssao_power = 2.0
 playblastSettings.ssao_radius = 0.3
 ```
 
-## Launch playblast settings
+### Launch playblast settings
 
 ```python
 from tang_core.document.get_document import get_document
@@ -554,15 +552,16 @@ cameraNode = document.root().find(camera)
 if not cameraNode:
     raise PlayblastTangException("No camera for playblast. Please load a camera before launching a playblast.")
 
-imagePath = "E:/TEMP/Maya/Tangerine Demo 2025/api_tests/playblast_folder/my_playblast_images.jpg" # folder have to exists before to launch the playblast @max @seb pas de message ni de log si le folder n'existe pas de sortie. normal ? Comment fait-on pour spécifier le padding ?
+imagePath = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_tests/playblast_folder/my_playblast_images.jpg" # folder have to exists before to launch the playblast @max @seb pas de message ni de log si le folder n'existe pas de sortie. normal ? Comment fait-on pour spécifier le padding ?
 
 Playblast.playblast(document, cameraNode, imagePath, settings=playblastSettings) # see previous part to create playblast settings
 ```
 
-## viewport subdivision
+### Viewport subdivision
 
-To apply subdivision use following lines.
-Subdivision values you store here will be use as the value of subdivision needed if option "sooth" of Playblast settings is enabled. @max @seb vrai ça ?
+To apply subdivision, use the following lines of code.
+The subdivision values you set here will be used if the "smooth" option in the Playblast settings is enabled.
+@max @seb vrai ça ?
 ```python
 from tang_core.document.document import Undoable
 from tang_core.shape import SubdivisionOverride, set_general_subdivision_override
@@ -604,7 +603,7 @@ from PySide2.QtWidgets import QApplication
 from meta_nodal_py import Geometry
 
 # opening scene
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 filePath = DEMO_FOLDER_PATH + "/api_tests/three_capy.shot" # shot file
 app = QApplication.instance()
 app.main_window.import_shot_files([filePath], load_mode=AssetLoadMode.ALL)
@@ -632,11 +631,11 @@ with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) a
   </TabItem>
 </Tabs>
 
-# Tags
+## Tags
 
-Tags allow you to group elements of your hierarchy to access them quickly.
-Use them as a selection for different purpose such as [baking with tags](usecase/#bake tag for alembic)
-Tangerine uses it for example for UI fast selection.
+Tags allow you to group elements in your hierarchy for quick access.
+They can be used for various purposes, such as [baking with tags](usecase/#bake-tag-for-alembic).
+For example, Tangerine uses tags to enable fast selection in the UI.
 
 ```python
 from tang_core.document.get_document import get_document
@@ -648,16 +647,15 @@ for child in children:
     tagger.create_tag(["name_of_tag"], show_in_gui=True)
 ```
 
-# Export
+## Export
 
-## Alembic format
+### Alembic Format
 
-Bake tag are available to define if a node has to be baked in the alembic file or not.
-You can use it to optimise your alembic data, ensuring you have only the necessary for post production chain.
-See use cases ofr examples.
+Bake tags are available to specify whether a node should be baked into the Alembic file.
+You can use them to optimize your Alembic data, ensuring that only the necessary elements are included for the post-production workflow.
+See the use cases section for examples.
 
-### export to alembic
-
+#### Export to alembic
 
 <Tabs>
   <TabItem value="Python Code" label="Python Code" default>
@@ -702,7 +700,7 @@ from tang_core.asset.asset_load_mode import AssetLoadMode
 from tang_core.document.get_document import get_document
 from tang_core.bake import bake
 
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 
 # opening the scene in tangerine
 filePath = DEMO_FOLDER_PATH + "/jade/jad_anim_217_001.shot" # shot file
@@ -759,20 +757,20 @@ except AttributeError:
         "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
     )
 ```
-We exported here a full hierarchy abc. See uses cases to have an example of exported abc that can be used in your pipeline using tags.
+Here we exported a full hierarchy as an Alembic file.
+See the use cases section for an example of an exported Alembic that can be used in your pipeline with tags.
   </TabItem>
 </Tabs>
 
+### Export .tang Asset File
 
-## Export Tangerine file
-
-Asset files .tang are generated from Mikan rigging toolkit.
-However, if you need to integrate an unrigged geometry, you may use the export asset feature to create an asset in a .tang file.
+`.tang` asset files are normally generated using the Mikan rigging toolkit.
+However, if you need to integrate unrigged geometry, you can use the export asset feature to create a `.tang` file.
 
 ```python
 from tang_core.document.get_document import get_document
 
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 filePath = DEMO_FOLDER_PATH + "/api_tests/my_node_asset_file.abc"
 document = get_document()
 node = document.root().find("character_jb:capy_modeling")
@@ -781,9 +779,9 @@ document.export_main_node(node, path) @seb et @max ne fonctionn  plus, normal ? 
 
 ```
 
-# Nodes
+## Nodes
 
-## selected Nodes
+### Get selected Nodes
 
 ```python
 from tang_core.document.get_document import get_document
@@ -802,10 +800,10 @@ for node in doc.node_selection():
 nodeDict = {node.get_name(): node for node in nodes}
 print(nodeDict.keys())
 ```
-## Access Nodes, Controllers and Plugs
+### Access Nodes, Controllers, and Plugs
 
-You will be able to manipulate nodes.
-Some nodes have a special function such as Asset nodes. These specific node are defined as the main node of a referenced asset by `Mikan`.
+You can manipulate nodes within your scene.
+Some nodes have special functions, such as Asset nodes. These specific nodes are defined as the main nodes of a referenced asset by `Mikan`.
 
 <Tabs>
   <TabItem value="Python Code" label="Python Code" default>
@@ -856,7 +854,7 @@ from tang_core.asset.asset_load_mode import AssetLoadMode
 import meta_nodal_py as kl
 
 # opening scene
-DEMO_FOLDER_PATH = "E:/TEMP/Maya/Tangerine Demo 2025/"
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
 filePath = DEMO_FOLDER_PATH + "/api_tests/three_capy.shot" # shot file
 app = QApplication.instance()
 tangLoadMode = AssetLoadMode.ALL
@@ -903,168 +901,58 @@ print(plug.get_full_name())
   </TabItem>
 </Tabs>
 
+## Animation
 
-# Animation
-
-## import Animation, Anim layers and contraints from file
+### Import Animation, Anim layers and contraints from file
 
 To come
 
-## list animated plugs, considering each anim layer
+### List animated plugs, considering each anim layer
 
 <Tabs>
   <TabItem value="Python Code" label="Python Code" default>
-```python
-```
+    ```python
+    ```
   </TabItem>
   <TabItem value="Package sample" label="Package sample">
-```python
-from tang_core.anim import find_anim_node
+    ```python
+    from tang_core.anim import find_anim_node
     from tang_core.layer import former_plug_to_layer_plug, has_layer_plugs
-from tang_core.callbacks import Callbacks
+    from tang_core.callbacks import Callbacks
 
-def getAnimatedPlugs(plug)
-    """Return a list of plug with animation, considering anim layers."""
-    # get plug if animated, or get associated layers plugs instead if plug is connected to layers
-    if has_layer_plugs(plug):
-        animatedPlugs = []
-        for layer in layers:
-            layer_plug = former_plug_to_layer_plug(plug, layer)
-            if layer_plug:
-                anim_node = find_anim_node(layer_plug)
-                if anim_node:
-                    animatedPlugs.append(layer_plug)
-        return animatedPlugs
-    else:
-        anim_node = find_anim_node(plug)
-        if anim_node:
-            return [plug]
-    return []
+    def getAnimatedPlugs(plug)
+        """Return a list of plug with animation, considering anim layers."""
+        # get plug if animated, or get associated layers plugs instead if plug is connected to layers
+        if has_layer_plugs(plug):
+            animatedPlugs = []
+            for layer in layers:
+                layer_plug = former_plug_to_layer_plug(plug, layer)
+                if layer_plug:
+                    anim_node = find_anim_node(layer_plug)
+                    if anim_node:
+                        animatedPlugs.append(layer_plug)
+            return animatedPlugs
+        else:
+            anim_node = find_anim_node(plug)
+            if anim_node:
+                return [plug]
+        return []
 
-ctrlNames = ["world", "move", "c_fly", "c_center", "c_camera_pos"] # filtering on nodes
-attrNames = ["tx", "ty", "tz", "rx", "ry", "rz"] # filtering on attributs
+    ctrlNames = ["world", "move", "c_fly", "c_center", "c_camera_pos"] # filtering on nodes
+    attrNames = ["tx", "ty", "tz", "rx", "ry", "rz"] # filtering on attributs
 
-# parsing scene nodes to find plug with animation
-rootNodes = getRootNodes(assetType=True) # get this method definition
-for rootNode in rootNodes:
-    for ctrl in Callbacks().get_all_controllers_in_asset(rootNode):
-        plugs = [plug for plug in ctrl.get_plugs() if plug.get_name() in attrNames]
-        for plug in plugs:
-            animatedPlugs = soft.getAnimatedPlugs(plug, layers=layers)
-            for animatedPlug in animatedPlugs:
-                anim_node = find_anim_node(animatedPlug)
-```
+    ### parsing scene nodes to find plug with animation
+    rootNodes = getRootNodes(assetType=True) # get this method definition
+    for rootNode in rootNodes:
+        for ctrl in Callbacks().get_all_controllers_in_asset(rootNode):
+            plugs = [plug for plug in ctrl.get_plugs() if plug.get_name() in attrNames]
+            for plug in plugs:
+                animatedPlugs = soft.getAnimatedPlugs(plug, layers=layers)
+                for animatedPlug in animatedPlugs:
+                    anim_node = find_anim_node(animatedPlug)
+    ```
   </TabItem>
 </Tabs>
-
-# animation
-##TODO
-```python
-def importAnimation(self, animDict=None, cstrDicts=None, offset=0):
-    animDict = animDict or {}
-    cstrDicts = cstrDicts or {}
-    doc = get_document()
-
-    modifierMessage = "pipeline : import asset animation"
-    if offset:
-        modifierMessage += " with offset %s" % offset
-    with doc.modify(modifierMessage, undoable=Undoable.YES) as modifier:
-        globalConstraintNode = get_shot_constraints(modifier=modifier)
-        for cstrDict in cstrDicts:
-            # remove asset constraint first
-            controller = Callbacks().find_controller_in_asset(
-                doc.root().find(cstrDict["constrained"]["asset"]), cstrDict["constrained"]["node_key"]
-            )
-
-            if controller and is_constrained(controller):
-                constraint = get_constraint(controller)
-                remove_shot_constraint(constraint, modifier)
-
-            # only keep targets that exist in Tangerine
-            constraintTargetsNodes = []
-            for target in cstrDict["targets"]:
-                targetNode = Callbacks().find_controller_in_asset(
-                    doc.root().find(target["asset"]), target["node_key"]
-                )
-                if targetNode is not None:
-                    constraintTargetsNodes.append(targetNode)
-
-            constraintName = cstrDict["name"]
-            existingConstraintName = [const.get_name() for const in shot_constraints(doc)]
-
-            if constraintName in existingConstraintName:
-                index = 1
-                while (constraintName + str(index)) in existingConstraintName:
-                    index += 1
-                constraintName = constraintName + str(index)
-
-            constraintAxes = TransformAxes(*cstrDict["axes"])
-            constraintType = CONSTRAINT_TYPE_BY_NAME.get(cstrDict["type"].lower(), None)
-            if not controller or not constraintTargetsNodes or not constraintType:
-                continue
-            # use Tangerine api now instead of json interpretation to avoid refacto due to some Tangerine changes
-            add_shot_constraint(
-                controller,
-                constraintTargetsNodes,
-                modifier,
-                name=constraintName,
-                axes=constraintAxes,
-                add_key=False,
-                constraint_type=constraintType,
-                select=False,
-            )
-        for assetName, actionDict in animDict.items():
-            node = doc.root().find(assetName)
-            if node is not None:
-                action = Action(node.get_name())
-                constraintAction = Action("constraint_" + node.get_name())
-
-                actionDict, constraintActionDict = self.extractConstraintActionFromAssetAction(
-                    node.get_name(), actionDict, doc
-                )
-                action.init_from_json_dict(actionDict)
-                constraintAction.init_from_json_dict(constraintActionDict)
-                if offset:
-                    action.apply(node, modifier, mode=Merge.replace_all_at_time, target_frame=offset)
-                    constraintAction.apply(
-                        globalConstraintNode, modifier, mode=Merge.replace_all_at_time, target_frame=offset
-                    )
-                else:
-                    action.apply(node, modifier)
-                    constraintAction.apply(globalConstraintNode, modifier)
-            else:
-                logger.info("Node %s not found to add action", assetName)
-
-def extractConstraintActionFromAssetAction(self, nodeName, actionDict, doc):
-    """
-    Method to gather constraint anim previously stored in asset action and now must be add to the global constraint node, so it read the node action to remove constraint info and store them in a new dict to create another action.
-    """
-    plugNames = {}
-    for const in shot_constraints(doc):
-        constraintedNodeInfos = controller_to_json_data(get_constrained(const))
-        if constraintedNodeInfos["asset"] != nodeName:
-            continue
-        plugNames[constraintedNodeInfos["node_key"]] = const.get_name()
-
-    constraintDict = {"anims": {}, "values": {}}
-
-    if plugNames is not None:
-        for key in ["anims", "values"]:
-            toRemove = []
-            for plugTocheck in actionDict[key]:
-                if plugTocheck.split(".")[0] in plugNames:
-                    isConstraintOffset = ".target_" in plugTocheck and "_offset_" in plugTocheck
-                    isConstraintWeight = ".target_weight_" in plugTocheck
-                    if isConstraintOffset or isConstraintWeight:
-                        plugname = plugTocheck.split(".")[0]
-                        constraintDict[key][plugTocheck.replace("%s." % plugname, "%s." % plugNames[plugname])] = (
-                            actionDict[key][plugTocheck]
-                        )
-                        toRemove.append(plugTocheck)
-            for p in toRemove:
-                actionDict[key].pop(p)
-    return actionDict, constraintDict
-```
 
 ## Restarting Tangerine
 Restart tangerine opening the filePath given
@@ -1076,4 +964,47 @@ args = app.tang_cmd_with_same_config(
     load_mode=AssetLoadMode.SAVED, extra_args=["--opensave=open", "--filePath=%s" % filePath]
 )
 app.restart_tang(args)
+```
+
+## Image plane and animation references
+```python
+from tang_core.camera import create_image_plane
+from tang_core.document.get_document import get_document
+from meta_nodal_py import Imath, AnimString, StringToPath
+from tang_core.document.document import Undoable
+
+
+document = get_document()
+
+cameraName = "cameras/persp/Persp" # camera Shape node
+cameraNode = document.root().find(cameraName)
+
+cameraTransform = cameraNode.get_parent()
+verticalApp = cameraNode.vertical_aperture.get_value(1)
+horizontalApp = cameraNode.horizontal_aperture.get_value(1)
+
+size = Imath.V2f(horizontalApp, verticalApp)
+with document.modify("image plane", undoable=Undoable.NO) as modifier:
+    imagePlane = create_image_plane(
+        cameraNode,
+        modifier,
+        image_path="//cog_server/projets/city-of-ghosts/cog_maya/sourceimages/layout/101/101_001/COG101_B_SC001_v5.jpg",
+        name="image_plane_001",
+        size=size,
+    )
+    anim_string = modifier.create_node(AnimString, imagePlane, "imageplane_string_animated")
+    string_to_path = modifier.create_node(StringToPath, imagePlane, "string_to_path")
+    modifier.connect_plugs(imagePlane.image_path, string_to_path.output)
+    modifier.connect_plugs(string_to_path.input, anim_string.result)
+    modifier.set_plug_value(anim_string.curve, imagePlaneList)
+
+    if hasattr(cameraTransform, "imageplane_depth"):
+        modifier.connect_plugs(imagePlane.depth, cameraTransform.imageplane_depth)
+# Think about to disable baking imagePlaneShape when exporting the camera
+
+
+document = get_document()
+imgPath = "E:/temp/tangerine/Tangerine Demo 2025/image_animatic.001.jpg" # padding could be 4 or more ?
+ref = document.animation_references.register(imgPath)
+ref.label = "animatic"
 ```

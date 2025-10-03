@@ -3,9 +3,9 @@ sidebar_position: 4
 ---
 # Tangerine Outputs
 
-Output formats of Tangerine are Alembic files and Usd file.
+Tangerine outputs are Alembic files and USD files.
 
-You will be able to load these output files in industry software.
+You can load these output files in standard industry software for further processing.
 
 ## Alembic Files
 
@@ -14,33 +14,33 @@ You will be able to load these output files in industry software.
 Alembic is focused on efficiently storing the computed results of complex procedural geometric constructions. It is very specifically not concerned with storing the complex dependency graph of procedural tools used to create the computed results. For example, Alembic will efficiently store the animated vertex positions and animated transforms that result from an arbitrarily complex animation and simulation process which could involve enveloping, corrective shapes, volume-preserving simulations, cloth and flesh simulations, and so on. Alembic will not attempt to store a representation of the network of computations (rigs, basically) which are required to produce the final, animated vertex positions and animated transforms.
 ```
 
-Alembic being an Open source technology, this output standard makes an efficient bridge from Tangerine to other industry software.
+Being open-source, Alembic provides an efficient bridge between Tangerine and other industry software.
+In an Alembic file, you will typically find two types of animation data:
 
-In the Alembic file, you will find two types animation datas :
 - Animation curves on transform objects
-- Baked Animation of deformed meshs
+- Baked animation of deformed meshes
 
 ### Maya import
 
-The AlembicImport plugin will allow you to load your alembic into Maya.
-Maya can be used for lighting, rendering in the next steps of your pipeline chain for example.
+The Alembic Import plugin allows you to load Alembic files into Maya.
+Maya can then be used for lighting, rendering, and other steps in your pipeline.
 
 Find the UI menu to import it in `Cache` > `Alembic Cache` > `Alembic Import (Options)`.
 
 ![console tangerine](./img/import_alembic_UI_maya.png)
 
-You have several possibilities to import your Alembic.
+Several import options are available to control how Alembic data is loaded.
 
-# Several option are available
+# Import Alembic to Maya options
 
 <details>
   <summary>Import to scene root</summary>
 
-  Import to scene root will create :
+  Importing to the scene root will create:
   - An Alembic node
-  - The full hierarchy of nodescontained in alembic file, in Maya format (transform, meshs, locators, ...)
+  - The full hierarchy of nodes contained in the Alembic file, in Maya format (transforms, meshes, locators, etc.)
 
-  Nodes of this hierarchy that have animation data (keys, baked geometry) will be connected to alembic node.
+  Nodes in this hierarchy that have animation data (keys or baked geometry) will be connected to the Alembic node.
 
   ```mel
   AbcImport "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/tangerine_modeling.abc"
@@ -51,19 +51,20 @@ You have several possibilities to import your Alembic.
   <details>
     <summary>Add option</summary>
 
-    Import to current selection with add option create :
+    Importing to the current selection with the "Add" option will create:
     - An Alembic node
-    - Only nodes that does not exists in actual hierarchy but exists in .abc file
+    - Only the nodes that do not already exist in the current hierarchy but are present in the `.abc` file
 
-    Animated nodes of the hierarchy will be linked to the Alembic node created
+    Animated nodes in this hierarchy will be linked to the created Alembic node.
+
 
   </details>
   <details>
     <summary>Merge option</summary>
 
-    Import to current selection with merge option create :
+    Importing to the current selection with the "Merge" option will create:
     - An Alembic node
-    - The full hierarchy of nodes contained in alembic file, in Maya format (transform, meshs, locators, ...)
+    - The full hierarchy of nodes contained in the Alembic file, in Maya format (transforms, meshes, locators, etc.)
 
     ```mel
     AbcImport -mode import -connect "jb" "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/tangerine_modeling.abc"
@@ -72,40 +73,40 @@ You have several possibilities to import your Alembic.
 
 </details>
 
-With this method, the algorithm of AlembicImport works like a tree. As soon as a change of hierarchy is detected in a branch, algorithm will stop to try to merge this branch and go back on the tree.
-
+With this method, the AlembicImport algorithm works like a tree. As soon as a hierarchy change is detected in a branch, the algorithm stops attempting to merge that branch and moves back up the tree.
 
 :::info
+If your Alembic file contains only static values (no animation, i.e., the same positions across frames), you will not see any Alembic nodes connected in the Maya scene.
 
-If your alembic file contains only static values (no animation, different positions in several frames), you won't see any Alembic node connected in the maya scene.
+Only the linked nodes—those with animation—will be updated automatically if the Alembic file changes.
 
-Only the linked nodes, the animated one, will be updated automatically if Alembic file changes.
-
-To ensure all the positions and values are up do date, even set values not animated, please automate the merge of the alembic at every opening of your maya file.
+To ensure all positions and values are up to date, including non-animated set values, it is recommended to automate the Alembic merge each time you open your Maya file.
 :::
 
 :::warning
-
-The AlembicImport plugin has some limitations such as :
-- Merging on another node than the selected one if there is namespaces and the top node name is not unique in maya scene
-- Not connecting a plug to alembic node if this plug is already connected to another node, even if the connection is an input connection.
-- Not Merging curves that have the same deformation on every frame (no animation)
-- Some more.
+The AlembicImport plugin has some limitations, including:
+- Merging on a different node than the selected one if namespaces exist and the top node name is not unique in the Maya scene.
+- Not connecting a plug to the Alembic node if the plug is already connected to another node, even if the connection is an input.
+- Not merging curves that have the same deformation on every frame (i.e., no animation).
+- Other minor limitations.
 
 We have several workarounds available. Please contact us if needed.
 :::
 
-### Houdini import
 
-Houdini works with [alembic nodes](https://www.sidefx.com/docs/houdini/io/alembic.html). You will be able to load aembic files exported from Tangerine and add physical dynamic, effects, and so one.
+### Houdini Import
 
-Here is an example of merging animation into a houdini shot file.
-![gui console](./img/houdini_alembics.png)
+Houdini works with [Alembic nodes](https://www.sidefx.com/docs/houdini/io/alembic.html).
+You can load Alembic files exported from Tangerine and add physical dynamics, effects, and more.
+
+Here is an example of merging animation into a Houdini shot file:
+![Houdini Alembics](./img/houdini_alembics.png)
 
 :::info
-There is a factor 100 scale from Tangerine to Houdini.
-Use a scale node to find the scale expected after importing your alembic node.
+There is a 1:100 scale factor between Tangerine and Houdini.
+Use a scale node to adjust the Alembic node to the correct scale after importing.
 :::
+
 
 #### import alembic with python
 ```python
@@ -149,19 +150,21 @@ cameraShape = hou.node("/obj/camera/.../cameraShape/")
 newNearClipExpression = cameraShape.parm("near").expression() + ' * ch("/obj/scale_world/scale")'
 cameraShape.parm("near").setExpression(newNearClipExpression)
 ```
-### Nuke import
+### Nuke Import
 
-Nuke is used for compositing. Nuke has 3D objects that you can use in your compositing workflow such as [Camera](https://learn.foundry.com/nuke/content/comp_environment/3d_compositing/importing_alembic_cameras.html) and [transofrms](https://learn.foundry.com/nuke/content/comp_environment/3d_compositing/importing_alembic_transforms.html).
+Nuke is used for compositing and supports 3D objects that you can integrate into your workflow, such as [Cameras](https://learn.foundry.com/nuke/content/comp_environment/3d_compositing/importing_alembic_cameras.html) and [Transforms](https://learn.foundry.com/nuke/content/comp_environment/3d_compositing/importing_alembic_transforms.html).
 
-To load a camera, use "Camera" (Camera 3D) type node.
-To load a hierarchy of transforms, use "ReadGeo" type node.
-![gui console](./img/nuke_alembics.png)
+- To load a camera, use a **Camera** (Camera 3D) node.
+- To load a hierarchy of transforms, use a **ReadGeo** node.
+
+![Nuke Alembics](./img/nuke_alembics.png)
 
 :::tip
-If your compositor uses selection in alembic hierachy, use following code to save it before to refresh any node.
-![gui console](./img/nuke_alembic_scene_hierarchy.png)
+If your compositing workflow relies on selecting objects in an Alembic hierarchy, use the following code to save the selection before refreshing any node.
 
-```
+![Nuke Alembic Scene Hierarchy](./img/nuke_alembic_scene_hierarchy.png)
+
+```python
 import nuke
 selectionDict = {}
 abcNode = nuke.toNode("ReadGeo1")
@@ -172,5 +175,6 @@ selectionDict[node] = abcItems
 
 ### Blender
 
-Blender is used for lighting, rendering and more.
-You can load alembics from Tangerine to [Blender](https://docs.blender.org/manual/en/latest/files/import_export/alembic.html#importing-alembic-files).
+Blender is used for lighting, rendering, and other tasks.
+You can import Alembic files exported from Tangerine into [Blender](https://docs.blender.org/manual/en/latest/files/import_export/alembic.html#importing-alembic-files).
+

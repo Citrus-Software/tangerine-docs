@@ -6,19 +6,23 @@ import TabItem from '@theme/TabItem';
 
 # Use case
 
-## Exporting animation in Tangerine format to upload it in Tangerine
+# Use Case
 
-Tangerine uses `.action` files names to store animation and set values data.
-You can write these files from another software and import it into Tangerine:
-- Select the top node of an asset
-- Use button `File > Load action on selected asset...`
-- Choose the .action file containing animation on controls matching the selected asset controls
+## Exporting Animation in Tangerine Format for Import
+
+Tangerine uses `.action` files to store animation data and set values.
+You can generate these files from another software and import them into Tangerine as follows:
+
+- Select the top node of an asset.
+- Use the menu: `File > Load Action on Selected Asset...`
+- Choose the `.action` file containing animation on controls that match the selected asset's controls.
 
 @seb @max c'est quoi la version simple de l'import de json action, juste ce qu'il y a derrière le bouton laod action on selected asset ^^ ?
 
-### Uploding in Tangerine
-Here is an example of a simple .action containing set values and animations curves on an asset.
-Ask for a more advance sample to know about how to import constraints, dummies, and other animation types.
+### Uploading in Tangerine
+
+Here is an example of a simple `.action` file containing set values and animation curves for an asset.
+For more advanced examples, including importing constraints, dummies, and other animation types, ask for further guidance.
 
 ```python
 def importAnimation(animDict=None, cstrDicts=None, offset=0):
@@ -96,9 +100,9 @@ def importAnimation(animDict=None, cstrDicts=None, offset=0):
             else:
                 logger.info("Node %s not found to add action", assetName)
 ```
-### Exporting .action from Maya simple animation
-Animation with no deformations can be store easilly in a `.action` file using following dictionnary
+### Exporting `.action` from Maya: Simple Animation
 
+Animations without deformations can be easily stored in a `.action` file using the following dictionary:
 
 <Tabs>
   <TabItem value="from Maya to Tangerine" label="from Maya to Tangerine" default>
@@ -213,11 +217,10 @@ jsonFile.close()
 
 ## Build a Shot
 
-You have the possibility to create a `Shot` object.
-In this way, you can add every attribute needed directly this new object and save it to a file.
-You skip the loading of data into Tangerine when not needed.
+You can create a `Shot` object, which allows you to add all necessary attributes directly to the new object and save it to a file.
+This approach skips loading data into Tangerine when it is not needed.
 
-For exemple, if you want to generate every `.shot` of a sequence or an episode really fast, use this.
+For example, if you want to quickly generate all `.shot` files for a sequ
 
 ```python
 from tang_core.document.shot import Shot
@@ -245,18 +248,19 @@ shot.export_file(filePath)
 @max @seb c'est quoi la dif entre les shot et le doc. Ya des element en plus dans le doc je dirais. Mais si je change le start et end du shot, je change celui du doc right ?
 
 :::tip
-Editing frame range will force the cache to reload.
-In your workflow, if you need to change framerange using API, you would prefer to do it in ascii before loading your shot to minimize cache computing.
+Editing the frame range will force the cache to reload.
+In your workflow, if you need to change the frame range using the API, it is preferable to do this in the ASCII `.shot` file **before** loading it into Tangerine to minimize cache computation.
 
 ```python
 import json
+
 with open(filePath, "r") as fileIO:
     data = json.load(fileIO)
-startFrame = fileJson["start_frame"]
-endFrame = fileJson["end_frame"]
-```
-:::
 
+startFrame = data["start_frame"]
+endFrame = data["end_frame"]
+:::
+```
 
 ## Exporting usefull and optimise data for pipeline chain
 
@@ -296,12 +300,164 @@ def setBakeTagOnNode(bake, node, tagger=None):
             tagger.tag_node("do_not_bake", node)
 ```
 
+```python
+from meta_nodal_py import Geometry, DisplayNode, Camera, CrossShapeTool
+from tang_core.abc import is_geom_mesh_modified_from_abc_source, AbcFilesKeepOpen
+from tang_core.document.get_document import get_document
+from tang_core.bake import bake
+
+document = get_document()
+
+capyJbAssetNode = document.root().find("character_n01_jb:jb")
+yuzuAssetNode = document.root().find("prop_n01_yuzu_logo:yuzu_logo")
+nodes = [capyJbAssetNode, yuzuAssetNode]
+
+tagger = document.tagger
+tagger.create_tag("do_not_bake", show_in_gui=False)
+tagger.create_tag("do_bake", show_in_gui=False)
+
+deformedGeometryNodes = []
+allGeometryChildren = []
+notGeoTranformsHierarchy = []
+
+with AbcFilesKeepOpen(document) as abc_files_keep_open:
+    for node in nodes:
+        nothingToBake = True
+        for node in node.get_children():
+            if not node.get_name() == "geo":
+                setBakeTagOnNode(False, node, tagger)
+                continue
+
+            # Get only the "geo" children, to filter parsing on geometry in this sample.
+            geoChildren = getAllHierarchy(node.get_child("geo"), nodeType="mesh")
+            for child in geoChildren:
+                allGeometryChildren.append(child)
+                if isinstance(child, Geometry):
+                    try:
+                        if is_geom_mesh_modified_from_abc_source(child, abc_files_keep_open):
+                            deformedGeometryNodes.append(child)
+                    except TangValueError as err:
+                        # If the node is a Locator, an exception is also raised,
+                        inputPlug = child.mesh_in.get_plug_input()
+                        if inputPlug and isinstance(inputPlug.get_node(), CrossShapeTool):
+                            print("Ignoring locator %s", child.get_name())
+
+
+# if you need to export spline, add a bake tag. By default, not baked.
+# for node in nodes:
+#     children = getAllHierarchy(node, nodeType="spline")
+
+abcExportFolder = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_tests/abc_export_usecase/"
+frameRangeParams = {"start_frame": 1, "end_frame": document.end_frame}
+
+# First export, we want only transforms in the hierarchy of "geo" node
+for node in allGeometryChildren:
+    setBakeTagOnNode(False, node, tagger) # we add a tag on do_not_bake that we will use as a filter in bake abc file
+
+try:
+    bake(
+        filename=abcExportFolder + "character_n01_jb_transforms.abc",
+        exclude_tag="do_not_bake",
+        included_spline_tag="do_bake",
+        roots=[capyJbAssetNode],
+        write_uv=True, # possible to disblae uv writing
+        document=document,
+        sub_samples=[],
+        write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+        **frameRangeParams
+    )
+except AttributeError:
+    print(
+        "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
+    )
+
+try:
+    bake(
+        filename=abcExportFolder + "prop_n01_yuzu_logo_transforms.abc",
+        exclude_tag="do_not_bake",
+        included_spline_tag="do_bake",
+        roots=[yuzuAssetNode],
+        write_uv=True, # possible to disblae uv writing
+        document=document,
+        sub_samples=[],
+        write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+        **frameRangeParams
+    )
+except AttributeError:
+    print(
+        "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
+    )
+
+# Second export only deformed mesh for jb capy
+for node in deformedGeometryNodes:
+    # other geometry still have the do_not_bake_tag.
+    setBakeTagOnNode(True, node, tagger) # we add a tag on do_not_bake that we will use as a filter in bake abc file
+
+try:
+    bake(
+        filename=abcExportFolder + "character_n01_jb_onlydeformed.abc",
+        exclude_tag="do_not_bake",
+        included_spline_tag="do_bake",
+        roots=[capyJbAssetNode],
+        write_uv=True, # possible to disblae uv writing
+        document=document,
+        sub_samples=[],
+        write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+        **frameRangeParams
+    )
+except AttributeError:
+    print(
+        "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
+    )
+# Third export all nodes in geometry
+for node in allGeometryChildren:
+    # other geometry still have the do_not_bake_tag.
+    setBakeTagOnNode(True, node, tagger) # we add a tag on do_not_bake that we will use as a filter in bake abc file
+
+try:
+    bake(
+        filename=abcExportFolder + "character_n01_jb_all.abc",
+        exclude_tag="do_not_bake",
+        included_spline_tag="do_bake",
+        roots=[capyJbAssetNode],
+        write_uv=True, # possible to disblae uv writing
+        document=document,
+        sub_samples=[],
+        write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+        **frameRangeParams
+    )
+except AttributeError:
+    print(
+        "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
+    )
+
+try:
+    bake(
+        filename=abcExportFolder + "prop_n01_yuzu_logo_all.abc",
+        exclude_tag="do_not_bake",
+        included_spline_tag="do_bake",
+        roots=[yuzuAssetNode],
+        write_uv=True, # possible to disblae uv writing
+        document=document,
+        sub_samples=[],
+        write_full_matrix=True, #@sebmax, on ne s'en sert plus en pipe, je décirs ça comment déjà ?
+        **frameRangeParams
+    )
+except AttributeError:
+    print(
+        "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
+    )
+```
+
 ### Add preroll postroll before to export
 
-Some post treatments will need a preroll and postroll into the alembic file.
+### Add Preroll and Postroll Before Export
 
-In the export command, you can choos a framerange that is different that document' framerange.
+Some post-processing steps may require a preroll and postroll in the Alembic file.
+
+When using the export command, you can choose a frame range that is different from the document's
 [See bake documentation.](api#export-to-alembic)
+
 ```python
 frameRangeParams = {"start_frame": -20, "end_frame":50}
 
@@ -317,11 +473,15 @@ bake(
     **frameRangeParams
 )
 ```
-Usually, you will need to add keys on these preroll part to ensure positions for physical engines for example.
-You can change the range for your document editing document.startFrame and document.endFrame.
-If your animation is already validated, and includes dynamic, the dynamic is calculating depending on the first frame of the document.
-Changing the range would edit it.
-You can bake this dynamic before to export.
+Usually, you will need to add keys in the preroll section to ensure correct positions, for example when using physics engines.
+
+You can change the frame range for your document by setting `document.start_frame` and `document.end_frame`.
+
+If your animation is already validated and includes dynamics, the dynamics are calculated based on the document's first frame.
+Changing the frame range will affect these calculations.
+
+You can bake the dynamics before exporting to preserve the correct results.
+
 
 ```python
 from tang_core.callbacks import Callbacks
@@ -346,28 +506,36 @@ if dynamicControllers:
     dynamic.bake_dynamic_controllers(dynamicControllers, document)
 ```
 
-### Merging efficiently in maya for production chain
-To be as efficient as possible, it is sense to seperate steps as much as possible, to reduce dependencies between steps.
-For example, the surfacing and uvs for rendering are not linked to animation (except feature animation of uvs).
-Here is a workflow to keep it independant, getting into maya the "renderable" version of an asset (uvs,shaders) and merging in a certain way into maya an alembic file from Tangerine.
+### Merging Efficiently in Maya for Production
 
+To maximize efficiency, it makes sense to separate steps as much as possible, reducing dependencies between them.
+For example, surfacing and UVs for rendering are generally independent of animation (except for animated UV features).
 
-# Playblasting options
+Here is a workflow to keep these steps independent: import the "renderable" version of an asset (UVs, shaders) into Maya and merge it in a controlled way with an Alembic file exported from Tangerine.
 
-## add HUD on image
-Use a post process to add HUD on your images as you need.
-Possibility to have a sample if needed.
+---
 
-# Callback processes
+# Playblasting Options
 
-You will be able to add code overrides quite easily, using menu's button or scripts path in command line.
+## Add HUD on Image
 
-## Add custom code around manual actions
-When you want to add code after a manually launched action from UI:
-- Change the Menu button to put yours instead of native one [(see here).](general#custom-menus)
-- Add your code around the basic called action.
+Use a post-processing step to add a HUD to your images as needed.
+A sample setup can be provided if required.
 
-Here are the code called behind default buttons.
+---
+
+# Callback Processes
+
+You can easily add custom code overrides, either using menu buttons or by specifying script paths on the command line.
+
+## Add Custom Code Around Manual Actions
+
+When you want to execute code after an action manually triggered from the UI:
+
+- Replace the native menu button with your own [(see here).](general#custom-menus)
+- Insert your custom code around the base action called by the button.
+
+Below is the code executed behind the default buttons.
 
 @seb @max j'ai besoin du code des boutons
 "File > Load Shot" : ``
@@ -375,13 +543,15 @@ Here are the code called behind default buttons.
 "File > New" : ``
 "Playblast > With playblast Settings > Persp" : ``
 
-## Add custom code around loading actions
-When you want to inject some code in between Tangerine loading actions, use command line with script path to execute.
-This script path should contain the algorithm that will draw your order of actions.
-You can send to this script args, just adding the args after the script path.
-Tangerine will skip it not understanding these args.
-Please find the command line documentation, and an example in the demo package.
+## Add Custom Code Around Loading Actions
 
+If you want to inject code during Tangerine's loading actions, you can use the command line and provide a script path to execute.
+This script should contain the algorithm that defines the order of actions to perform.
+
+You can also pass arguments to the script by adding them after the script path.
+Tangerine will skip any arguments it does not recognize.
+
+See the command line documentation for details, and refer to the demo package for an example.
 
 <details>
   <summary>Demo package command</summary>
@@ -436,13 +606,14 @@ Please find the command line documentation, and an example in the demo package.
     </details>
 </details>
 
-# Manipulating .tang files using Json's python library
-Across a production, you could need several times to
-- update a plug value for an asset, that is use in hundreds of shots
-- Check which shots use a controller to evaluate the cost of this controller to be modified
-- Change start frame or end frame of several shots
+# Manipulating .tang Files Using Python's JSON Library
 
-Tang files are json readable file and you will be able to search into data just using json python library.
+During production, you may need to:
+- Update a plug value for an asset that is used in hundreds of shots.
+- Check which shots use a specific controller to evaluate the cost of modifying it.
+- Change the start or end frame of multiple shots.
+
+`.tang` files are JSON-readable, so you can search and manipulate their data using Python's built-in `json` library.
 
 <Tabs>
   <TabItem value="List references" label="List references" default>
