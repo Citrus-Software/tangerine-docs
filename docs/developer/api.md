@@ -734,6 +734,8 @@ def getAllHierarchy(node, nodeType=None):
             node = it.node
             if not isinstance(node, SceneGraphNode) and not isinstance(node, classInstance):
                 it.skip_children()
+            elif (classInstance is not None and isinstance(node, classInstance)):
+                result.append(node)
         return result
 
 children = getAllHierarchy(node, nodeType="mesh")
@@ -967,12 +969,27 @@ app.restart_tang(args)
 ```
 
 ## Image plane and animation references
+
+A tool is available for animators to see in their camera image or image sequences references.
+This tool is called "animation reference" and can be pre-configured in the pipeline as following.
+
+```python
+document = get_document()
+imgPath = "E:/TEMP/Maya/Tangerine Demo 2025/api_tests/image_plane_sequence/anim_reference_image_plane.001.jpg" # @max @seb padding could be 4 or more ?
+ref = document.animation_references.register(imgPath)
+ref.label = "animatic"
+```
+
+If you need to create a specific image plane in your shot, you can create the following nodes by script.
+Adding it to your asset trough Mikan features would be the best practise but sometimes you only need the node in animation and want to keep your cameras `.tang` clean.
+
 ```python
 from tang_core.camera import create_image_plane
 from tang_core.document.get_document import get_document
-from meta_nodal_py import Imath, AnimString, StringToPath
+from meta_nodal_py import Imath, ImageSequenceToImagePath, Path, CurrentFrame, FloatToInt, Node
 from tang_core.document.document import Undoable
 
+image_plane_sequence_path = "E:/TEMP/Maya/Tangerine Demo 2025/api_tests/image_plane_sequence/ctr_anim_scenettes-demo-chars_jb-capy-cute_v000.###.jpg"
 
 document = get_document()
 
@@ -985,26 +1002,26 @@ horizontalApp = cameraNode.horizontal_aperture.get_value(1)
 
 size = Imath.V2f(horizontalApp, verticalApp)
 with document.modify("image plane", undoable=Undoable.NO) as modifier:
+
     imagePlane = create_image_plane(
         cameraNode,
         modifier,
-        image_path="//cog_server/projets/city-of-ghosts/cog_maya/sourceimages/layout/101/101_001/COG101_B_SC001_v5.jpg",
+        image_path="",
         name="image_plane_001",
         size=size,
     )
-    anim_string = modifier.create_node(AnimString, imagePlane, "imageplane_string_animated")
-    string_to_path = modifier.create_node(StringToPath, imagePlane, "string_to_path")
-    modifier.connect_plugs(imagePlane.image_path, string_to_path.output)
-    modifier.connect_plugs(string_to_path.input, anim_string.result)
-    modifier.set_plug_value(anim_string.curve, imagePlaneList)
+    sequence_to_path = ImageSequenceToImagePath(imagePlane, "sequence_to_path")
+    sequence_to_path.image_sequence_path.set_value(Path(image_plane_sequence_path))
+
+    current_frame = modifier.create_node(CurrentFrame, imagePlane, 'current_frame')
+    current_frame_int = modifier.create_node(FloatToInt, imagePlane, 'current_frame_int')
+    modifier.connect_plugs(current_frame_int.input, current_frame.result)
+    modifier.connect_plugs(sequence_to_path.frame, current_frame_int.output)
+
+    modifier.connect_plugs(imagePlane.image_path, sequence_to_path.image_path)
 
     if hasattr(cameraTransform, "imageplane_depth"):
         modifier.connect_plugs(imagePlane.depth, cameraTransform.imageplane_depth)
 # Think about to disable baking imagePlaneShape when exporting the camera
 
-
-document = get_document()
-imgPath = "E:/temp/tangerine/Tangerine Demo 2025/image_animatic.001.jpg" # padding could be 4 or more ?
-ref = document.animation_references.register(imgPath)
-ref.label = "animatic"
 ```
