@@ -26,7 +26,7 @@ For more advanced examples, including importing constraints, dummies, and other 
 
 ```python
 
-file_path = "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/maya_layout/character_n01_jb.action"
+file_path = "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/maya_layout/character_n01_jb.action"
 action = Action("my_action")
 action.load(file_path)
 with get_document().modify('Apply Action') as modifier:
@@ -172,11 +172,11 @@ shot.fps = 24
 shot.sound_path = "" # editing this attribute will reload the sound file
 
 # add references to assets, using fullpath
-shot.add_asset("prop_n01_yuzu_logo:yuzu_logo", {"file_path": "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/yuzu_logo.tang"})
-shot.add_asset("character_n01_jb:jb", {"file_path": "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/capy_jb.tang"})
+shot.add_asset("prop_n01_yuzu_logo:yuzu_logo", {"file_path": "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/yuzu_logo.tang"})
+shot.add_asset("character_n01_jb:jb", {"file_path": "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/capy_jb.tang"})
 
 # saving to a file
-filePath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/built_shot.shot"
+filePath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/built_shot.shot"
 shot.export_file(filePath)
 
 ```
@@ -224,6 +224,26 @@ First exports almeibc files with custom content using tags
     We focus on two assets, `character_n01_jb:jb` and `prop_n01_yuzu_logo:yuzu_logo`.
     ```
     from tang_core.document.get_document import get_document
+
+    from meta_nodal_py import SceneGraphNode, Geometry, SplineCurve
+    def getAllHierarchy(node, nodeType=None):
+            result = []
+            if nodeType == "mesh":
+                classInstance = Geometry
+            elif nodeType == "spline":
+                classInstance = SplineCurve
+            elif not nodeType == "group":
+                classInstance = SceneGraphNode
+            else:
+                classInstance = None
+
+            for it in node.depth_first_skippable_iterator():
+                node = it.node
+                if not isinstance(node, SceneGraphNode) and not isinstance(node, classInstance):
+                    it.skip_children()
+                elif (classInstance is not None and isinstance(node, classInstance)):
+                    result.append(node)
+            return result
 
     def setBakeTagOnNode(bake, node, tagger=None):
         """Helper function to set the :param node: tags "do_bake" and "do_not_bake" according to the :param bakable:
@@ -303,8 +323,7 @@ First exports almeibc files with custom content using tags
     # for node in nodes:
     #     children = getAllHierarchy(node, nodeType="spline")
 
-    abcExportFolder = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_tests/abc_export_usecase/"
-    frameRangeParams = {"start_frame": 1, "end_frame": document.end_frame}
+    abcExportFolder = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_samples/abc_export_usecase/"
 
     # First export, we want only transforms in the hierarchy of "geo" node
     for node in allGeometryChildren:
@@ -321,7 +340,8 @@ First exports almeibc files with custom content using tags
             document=document,
             sub_samples=[],
             write_full_matrix=True,
-            **frameRangeParams
+            start_frame= 1,
+            end_frame= document.end_frame,
         )
     except AttributeError:
         print(
@@ -338,7 +358,8 @@ First exports almeibc files with custom content using tags
             document=document,
             sub_samples=[],
             write_full_matrix=True,
-            **frameRangeParams
+            start_frame= 1,
+            end_frame= document.end_frame,
         )
     except AttributeError:
         print(
@@ -360,7 +381,8 @@ First exports almeibc files with custom content using tags
             document=document,
             sub_samples=[],
             write_full_matrix=True,
-            **frameRangeParams
+            start_frame= 1,
+            end_frame= document.end_frame,
         )
     except AttributeError:
         print(
@@ -381,7 +403,8 @@ First exports almeibc files with custom content using tags
             document=document,
             sub_samples=[],
             write_full_matrix=True,
-            **frameRangeParams
+            start_frame= 1,
+            end_frame= document.end_frame,
         )
     except AttributeError:
         print(
@@ -398,7 +421,8 @@ First exports almeibc files with custom content using tags
             document=document,
             sub_samples=[],
             write_full_matrix=True,
-            **frameRangeParams
+            start_frame= 1,
+            end_frame= document.end_frame,
         )
     except AttributeError:
         print(
@@ -477,7 +501,7 @@ Applying animation to our renderable meshes is done in two steps:
                         cmds.connectAttr(node + "." + attribute, connection)
 
     #
-    alembicPath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/abc_export_usecase/prop_n01_yuzu_logo_transforms.abc"
+    alembicPath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/abc_export_usecase/prop_n01_yuzu_logo_transforms.abc"
     assetTopNode = "prop_n01_yuzu_logo:yuzu_logo"
     assetNamespace = "prop_n01_yuzu_logo"
 
@@ -571,8 +595,6 @@ When using the export command, you can choose a frame range that is different fr
 [See bake documentation.](api#export-to-alembic)
 
 ```python
-frameRangeParams = {"start_frame": -20, "end_frame":50}
-
 bake(
     filename=outputPathLocal,
     exclude_tag="do_not_bake",
@@ -582,7 +604,8 @@ bake(
     document=document,
     sub_samples=subsamples,
     write_full_matrix=writeFullMatrix,
-    **frameRangeParams
+    start_frame= -20,
+    end_frame= 50,
 )
 ```
 Usually, you will need to add keys in the preroll section to ensure correct positions, for example when using physics engines.
@@ -659,7 +682,7 @@ See the command line documentation for details, and refer to the demo package fo
   <summary>Demo package command</summary>
 
     ```
-    "C:\Program Files\TeamTO\Tangerine\1.7.14\TangerineConsole.exe" --log_to_file --kernel release --no-gui -l debug "E:/TEMP/tangerine/Tangerine Demo 2025/hook.py" E:\work\sandbox\tang-docs\docs\runTangContainerBatch.py --firstarg --secondarg 42 --filePath "E:\TEMP\tangerine\Tangerine Demo 2025\api_tests\three_capy.shot"
+    "C:\Program Files\TeamTO\Tangerine\1.7.14\TangerineConsole.exe" --log_to_file --kernel release --no-gui -l debug "E:/TEMP/tangerine/Tangerine Demo 2025/hook.py" E:\work\sandbox\tang-docs\docs\runTangContainerBatch.py --firstarg --secondarg 42 --filePath "E:\TEMP\tangerine\Tangerine Demo 2025\api_samples\three_capy.shot"
     ```
 
     <details>
@@ -723,7 +746,7 @@ During production, you may need to:
     # -*- coding: utf-8 -*-
     import json
 
-    filePath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/three_capy.shot"
+    filePath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/three_capy.shot"
 
     with open(filePath, "r") as tangFile:
         data = json.load(tangFile)
@@ -757,7 +780,7 @@ During production, you may need to:
                 if plugStaticValue:
                     print("%s visibility set to %s " % (asset + "." + control + "." + plug, plugStaticValue))
 
-    filePath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/three_capy.shot"
+    filePath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/three_capy.shot"
 
     with open(filePath, "r") as sceneFile:
         animFile = json.load(sceneFile)

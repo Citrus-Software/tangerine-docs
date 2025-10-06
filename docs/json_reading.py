@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-filePath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/three_capy.shot"
+filePath = "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/three_capy.shot"
 
 with open(filePath, "r") as tangFile:
     data = json.load(tangFile)

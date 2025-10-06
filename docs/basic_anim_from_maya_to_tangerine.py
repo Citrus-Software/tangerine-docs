@@ -276,7 +276,7 @@ def storeAnimationDict():
                         for multiAttribute in multiAttributes
                         if cmds.attributeQuery(multiAttribute, node=ctrlName, attributeType=True) != "message"
                     }
-        jsonPath = os.path.join("E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/maya_layout/%s.action" % namespace)
+        jsonPath = os.path.join("E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/maya_layout/%s.action" % namespace)
 
         if actionDict:
             jsonFile = open(jsonPath, "w")
@@ -284,7 +284,7 @@ def storeAnimationDict():
             jsonFile.close()
 
     if animLayersAssignementDict:
-        jsonLayerPath = os.path.join("E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/maya_layout/%s_layer.action" % namespace)
+        jsonLayerPath = os.path.join("E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/maya_layout/%s_layer.action" % namespace)
         layersDict = getAnimLayers(animLayersAssignementDict)
         jsonFile = open(jsonLayerPath, "w")
         json.dump(layersDict, jsonFile, indent=4)

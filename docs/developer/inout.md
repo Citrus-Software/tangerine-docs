@@ -43,7 +43,7 @@ Several import options are available to control how Alembic data is loaded.
   Nodes in this hierarchy that have animation data (keys or baked geometry) will be connected to the Alembic node.
 
   ```mel
-  AbcImport "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/tangerine_modeling.abc"
+  AbcImport "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/tangerine_modeling.abc"
   ```
 </details>
 <details>
@@ -67,7 +67,7 @@ Several import options are available to control how Alembic data is loaded.
     - The full hierarchy of nodes contained in the Alembic file, in Maya format (transforms, meshes, locators, etc.)
 
     ```mel
-    AbcImport -mode import -connect "jb" "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/tangerine_modeling.abc"
+    AbcImport -mode import -connect "jb" "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/tangerine_modeling.abc"
     ```
   </details>
 

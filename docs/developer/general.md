@@ -77,7 +77,7 @@ You will find an example in the demo-package.
 
     In a Terminal, use for example:
     ```
-    SET TANG_ENV_PATH="E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/sample_scripts/"
+    SET TANG_ENV_PATH="E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/sample_scripts/"
     "C:\Program Files\TeamTO\Tangerine\1.7.14\TangerineConsole.exe" --log_to_file --kernel release -l debug
     ```
     The user_setup file will execute user_setup script that will create the custom menu develpped in tangerineMenu.py

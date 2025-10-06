@@ -15,7 +15,7 @@ You can activate the terminal windows starting Tangerine to have verbosity.
 - In batch mode, you can launch tangerine in a terminal adding your script as a parameter.
 See detail int [command line part](batch#batch-mode).
 ```
-"E:/TEMP/tangerine/Tangerine Demo 2025/Tangerine/TangerineConsole.exe" --log_to_file --kernel release -l debug --no-hidden --no-gui "E:/TEMP/tangerine/Tangerine Demo 2025/after_opening_tangerine.py" "E:/TEMP/tangerine/Tangerine Demo 2025/hook.py" "E:/TEMP/tangerine/Tangerine Demo 2025/api_tests/three_capy.shot" "E:/TEMP/tangerine/Tangerine Demo 2025/after_loading_document.py"
+"E:/TEMP/tangerine/Tangerine Demo 2025/Tangerine/TangerineConsole.exe" --log_to_file --kernel release -l debug --no-hidden --no-gui "E:/TEMP/tangerine/Tangerine Demo 2025/after_opening_tangerine.py" "E:/TEMP/tangerine/Tangerine Demo 2025/hook.py" "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/three_capy.shot" "E:/TEMP/tangerine/Tangerine Demo 2025/after_loading_document.py"
 ```
 ![console tangerine](./img/console_batch_tangerine.png)
 
@@ -184,7 +184,7 @@ from tang_core.document.shot import Shot
 from tang_core.document.get_document import get_document
 
 DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
-filePath = DEMO_FOLDER_PATH + "/api_tests/my_saved_shot_2.shot"
+filePath = DEMO_FOLDER_PATH + "/api_samples/my_saved_shot_2.shot"
 
 document = get_document()
 Shot.export_shot_file(filePath, document)
@@ -249,7 +249,7 @@ from tang_core.document.get_document import get_document
 document = get_document()
 
 DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
-filePath = DEMO_FOLDER_PATH + "/api_tests/capy_modeling.abc"
+filePath = DEMO_FOLDER_PATH + "/api_samples/capy_modeling.abc"
 
 # create a abcReaderNode, connect nodes, and a basic rig around
 # automatic_instances can be disabled if needed to consider instances independantly
@@ -552,10 +552,7 @@ document = get_document()
 camera = "cameras/persp/Persp"
 cameraNode = document.root().find(camera)
 
-if not cameraNode:
-    raise PlayblastTangException("No camera for playblast. Please load a camera before launching a playblast.")
-
-imagePath = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_tests/playblast_folder/my_playblast_images.jpg"
+imagePath = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_samples/playblast_folder/my_playblast_images.jpg"
 
 Playblast.playblast(document, cameraNode, imagePath, settings=playblastSettings) # see previous part to create playblast settings
 ```
@@ -564,41 +561,43 @@ Playblast.playblast(document, cameraNode, imagePath, settings=playblastSettings)
 
 To apply subdivision, use the following lines of code.
 The subdivision values you set here will be used if the "smooth" option in the Playblast settings is enabled.
-@max verifier valeur de subdiv et playblast, add image
+
 ```python
-from tang_core.document.document import Undoable
 from tang_core.shape import SubdivisionOverride, set_general_subdivision_override
 from tang_core.document.get_document import get_document
 
 document = get_document()
 
-# choose subdivision value, 0 being no subdivisions.
-subdivOverride = SubdivisionOverride(2)
-with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) as modifier:
+# choose subdivision value, ON = full smooth value, HALF_LEVEL = Half the smooth value, OFF = not smoothed at all
+subdivOverride = SubdivisionOverride.ON
+with document.modify("subdiv_override") as modifier:
     set_general_subdivision_override(subdivOverride, modifier)
 ```
+
+You can see level of subdivision applied, in plugs view selecting a mesh.
+The subdivision value used is the value stored in plug `subdivision_level`
+![subdivision level override](./img/subdivision_level.png)
 
 If you need some mesh to have different subdivision properties, use these lines:
 
 <Tabs>
   <TabItem value="Python Code" label="Python Code" default>
 ```python
-from tang_core.document.document import Undoable
 from tang_core.shape import SubdivisionOverride, set_subdivision_override
 from tang_core.document.get_document import get_document
 
 document = get_document()
 
-subdivOverride = SubdivisionOverride(0)  # subdivOvveride could be 0, 1, 2 depending the number of subdivisions you need
-mesh = [mesh_node] # node of type Geometry
-with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) as modifier:
-    set_subdivision_override(mesh, subdivOvveride, modifier) # subdivOvveride could be 0, 1, 2 depending the number of subdivisions you need
+subdivOverride = SubdivisionOverride.OFF  # ON = full smooth value, HALF_LEVEL = Half the smooth value, OFF = not smoothed at all
+
+mesh = [YOUR_NODE] # node of type Geometry
+with document.modify("subdiv_override") as modifier:
+    set_subdivision_override(mesh, subdivOverride, modifier)
 
 ```
   </TabItem>
   <TabItem value="Package sample" label="Package sample">
 ```python
-from tang_core.document.document import Undoable
 from tang_core.shape import SubdivisionOverride, set_subdivision_override, set_general_subdivision_override
 from tang_core.asset.asset_load_mode import AssetLoadMode
 from tang_core.document.get_document import get_document
@@ -607,29 +606,27 @@ from meta_nodal_py import Geometry
 
 # opening scene
 DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
-filePath = DEMO_FOLDER_PATH + "/api_tests/three_capy.shot" # shot file
+filePath = DEMO_FOLDER_PATH + "/api_samples/three_capy.shot" # shot file
 app = QApplication.instance()
 app.main_window.import_shot_files([filePath], load_mode=AssetLoadMode.ALL)
 
 document = get_document()
 
-# set 0 subdivisions on set hierarchy
+# set full subdivision on all meshs of the scene
+subdivOverride = SubdivisionOverride.ON
+with document.modify("subdiv_override") as modifier:
+    set_general_subdivision_override(subdivOverride, modifier)
+
+# set OFF subdivision on set hierarchy
 assetNode = document.root().find("set_n01_white_neutral_int:white_neutral_int")
 # listing Geometry nodes in assetNode hierarchy
-subdivOverride = SubdivisionOverride(0)  # subdivOvveride could be 0, 1, 2 depending the number of subdivisions you need
-with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) as modifier:
+subdivOverride = SubdivisionOverride.OFF  # ON = full smooth value, HALF_LEVEL = Half the smooth value, OFF = not smoothed at all
+with document.modify("subdiv_override") as modifier:
     for it in assetNode.depth_first_skippable_iterator():
         node = it.node
         if isinstance(node, Geometry):
             print(node.get_name())
             set_subdivision_override(node, subdivOverride, modifier)
-
-@max je ne vois pas le resultat dans la vue plug, je vois toujours subdiv = 2. je sais que ya une subtilité sur l'affichage ou la subdiv réelle. vous pourriez regarder avec moi ce point ?
-
-# set 2 subdivision on all meshs of the scene
-subdivOverride = SubdivisionOverride(2)
-with document.modify("subdiv_override", undoable=Undoable.NO_AND_NO_DOC_DIRTY) as modifier:
-    set_general_subdivision_override(subdivOverride, modifier)
 ```
   </TabItem>
 </Tabs>
@@ -643,18 +640,20 @@ For example, Tangerine uses tags to enable fast selection in the UI.
 ```python
 from tang_core.document.get_document import get_document
 
-children = getAllHierarchy(node, nodeType="mesh")
-for child in children:
-    # filter you nodes base on name, plugs, plug's value or more
-    tagger = get_document().tagger
-    tagger.create_tag(["name_of_tag"], show_in_gui=True)
+tagger = get_document().tagger
+super_tag = tagger.create_tag("YOUR_SUPER_TAG_NAME", show_in_gui=True)
+tag = tagger.create_tag("YOUR_TAG_NAME", super_tag=super_tag, show_in_gui=True) # YOUR_TAG_NAME will also be considered as a YOUR_SUPER_TAG_NAME tag. You can think of it as inheritance in OOP.
+
+nodes = [YOUR_NODE]
+for node in nodes:
+  tagger.tag_node(tag, node)
 ```
 
 ## Export
 
 ### Alembic Format
 
-Bake tags are available to specify whether a node should be baked into the Alembic file.
+Tags can be used to a slector for bake action.
 You can use them to optimize your Alembic data, ensuring that only the necessary elements are included for the post-production workflow.
 See the use cases section for examples.
 
@@ -665,9 +664,10 @@ See the use cases section for examples.
 
 ```python
 from tang_core.bake import bake
+from tang_core.document.get_document import get_document
 
-outputPath = "[exported_abc.abc]" # Path on the server where the alembic file will be saved. Folders should exists before export.
-nodes = mynode # Tangerine nodes to export as alembic
+outputPath = "YOUR_ABC_EXPORT_PATH.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
+nodes = [YOUR_NODE] # Tangerine nodes to export as alembic
 
 locators = False
 writeFullMatrix = False
@@ -675,19 +675,16 @@ subsamples = [-0.125, 0.125] # subsamples to export, [] for no subsamples export
 
 document = get_document()
 
-frameRangeParams = {"start_frame": document.start_frame, "end_frame":document.end_frame}
-
 try:
     bake(
         filename=outputPath,
-        exclude_tag="do_not_bake",
-        included_spline_tag="do_bake",
         roots=nodes,
         write_uv=True, # possible to disblae uv writing
         document=document,
         sub_samples=subsamples,
         write_full_matrix=writeFullMatrix, # force exporting matrix values instead of each component values
-        **frameRangeParams
+        start_frame=document.start_frame,
+        end_frame=document.end_frame,
     )
 except AttributeError:
     print(
@@ -702,60 +699,50 @@ from PySide2.QtWidgets import QApplication
 from tang_core.asset.asset_load_mode import AssetLoadMode
 from tang_core.document.get_document import get_document
 from tang_core.bake import bake
-
+from meta_nodal_py import SceneGraphNode, Geometry, SplineCurve
+#  or isinstance(node, SplineCurve) or isinstance(node, SplineCurve):
 DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
-
+filePath = DEMO_FOLDER_PATH + "/api_samples/three_capy.shot" # shot file
 # opening the scene in tangerine
-filePath = DEMO_FOLDER_PATH + "/jade/jad_anim_217_001.shot" # shot file
 app = QApplication.instance()
 app.main_window.import_shot_files([filePath], load_mode=AssetLoadMode.ALL)
 
 document = get_document()
 
-outputPath = DEMO_FOLDER_PATH + "api_tests/my_exported_abc.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
-nodes = [document.root().find("character_n01_hui_lin:hui_lin")] # Tangerine nodes to export as alembic
+outputPath = DEMO_FOLDER_PATH + "api_samples/my_exported_abc.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
+assetNode = document.root().find("character_n01_jb:jb") # asset node
 
 locators = False
 writeFullMatrix = False
 subsamples = [-0.125, 0.125] # subsamples to export, [] for no subsamples export
 
-frameRangeParams = {"start_frame": 1, "end_frame": document.end_frame}
+tagger = get_document().tagger
+tag = tagger.create_tag("DO_BAKE_NODE", show_in_gui=True)
+for it in assetNode.depth_first_skippable_iterator():
+    node = it.node
+    if isinstance(node, (Geometry, SceneGraphNode, SplineCurve)):
+      tagger.tag_node(tag, node)
+tagger.tag_node(tag, assetNode)
 
-from meta_nodal_py import SceneGraphNode, Geometry, SplineCurve
-def getAllHierarchy(node, nodeType=None):
-        result = []
-        if nodeType == "mesh":
-            classInstance = Geometry
-        elif nodeType == "spline":
-            classInstance = SplineCurve
-        elif not nodeType == "group":
-            classInstance = SceneGraphNode
-        else:
-            classInstance = None
+# disable bake on every part of rig without geometry. Clean and optimize exported alembic files.
+noBakeTag = tagger.create_tag("DO_NOT_BAKE_NODE", show_in_gui=True)
+for node in assetNode.get_children():
+  if not node.get_name() == "geo":
+      tagger.tag_node(noBakeTag, node)
 
-        for it in node.depth_first_skippable_iterator():
-            node = it.node
-            if not isinstance(node, SceneGraphNode) and not isinstance(node, classInstance):
-                it.skip_children()
-            elif (classInstance is not None and isinstance(node, classInstance)):
-                result.append(node)
-        return result
-
-children = getAllHierarchy(node, nodeType="mesh")
-for child in children:
-    setBakeTagOnNode(True, child, tagger)
 
 try:
     bake(
         filename=outputPath,
-        exclude_tag="do_not_bake",
-        included_spline_tag="do_bake",
-        roots=nodes,
+        exclude_tag="DO_NOT_BAKE_NODE",
+        included_spline_tag="DO_BAKE_NODE",
+        roots=[node],
         write_uv=True, # possible to disblae uv writing
         document=document,
         sub_samples=subsamples,
         write_full_matrix=writeFullMatrix,
-        **frameRangeParams
+        start_frame=1,
+        end_frame=document.end_frame,
     )
 except AttributeError:
     print(
@@ -776,7 +763,7 @@ However, if you need to integrate unrigged geometry, you can use the export asse
 from tang_core.document.get_document import get_document
 
 DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
-filePath = DEMO_FOLDER_PATH + "/api_tests/my_node_asset_file.abc"
+filePath = DEMO_FOLDER_PATH + "/api_samples/my_node_asset_file.abc"
 document = get_document()
 node = document.root().find("character_jb:capy_modeling")
 
@@ -785,21 +772,20 @@ document.export_asset(node, path) @sixtine test
 
 ## Nodes
 
-### Get selected Nodes
+### Get Asset Nodes from selection
 
 ```python
 from tang_core.document.get_document import get_document
 from tang_core.asset.asset import Asset
 from meta_nodal_py import SceneGraphNode
 
-doc = get_document()
+document = get_document()
 
 nodes = []
 
-for node in doc.node_selection():
+for node in document.node_selection():
     if type(node) == SceneGraphNode and Asset.is_asset(node.get_name()) and Asset.is_asset_loaded(node):
         nodes.append(node)
-
 
 nodeDict = {node.get_name(): node for node in nodes}
 print(nodeDict.keys())
@@ -839,15 +825,16 @@ for child in children:
 # hide a node
 assetNode.show.set_value(False)
 
-# get a controller in asset hierarchy
-ctrl = "[name_of_control]" # name of a controler you are searching for
+# get a controller in asset hierarchy, using Mikan Callbacks
+ctrl = "CONTROL_NAME" #
 node = Callbacks().find_controller_in_asset(assetNode, ctrl)
+
 # Plugs
-# list plugs
-plugs = node.get_dynamic_plugs()
+# list plugs of a node
+plugs = node.get_plugs()
 
 # get a plug on node
-attribute = "[name_of_attribute"]
+attribute = "NAME_OF_ATTRIBUTE"
 plug = node.get_plug(attribute)
 ```
   </TabItem>
@@ -862,7 +849,7 @@ import meta_nodal_py as kl
 
 # opening scene
 DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
-filePath = DEMO_FOLDER_PATH + "/api_tests/three_capy.shot" # shot file
+filePath = DEMO_FOLDER_PATH + "/api_samples/three_capy.shot" # shot file
 app = QApplication.instance()
 tangLoadMode = AssetLoadMode.ALL
 app.main_window.import_shot_files([filePath], load_mode=tangLoadMode)
@@ -961,18 +948,6 @@ To come
   </TabItem>
 </Tabs>
 
-## Restarting Tangerine
-Restart tangerine opening the filePath given
-```python
-filePath = "./my_tang_file.tang"
-
-app = get_tang_app()
-args = app.tang_cmd_with_same_config(
-    load_mode=AssetLoadMode.SAVED, extra_args=["--opensave=open", "--filePath=%s" % filePath]
-)
-app.restart_tang(args)
-```
-
 ## Image plane and animation references
 
 A tool is available for animators to see in their camera image or image sequences references.
@@ -980,7 +955,7 @@ This tool is called "animation reference" and can be pre-configured in the pipel
 
 ```python
 document = get_document()
-imgPath = "E:/TEMP/Maya/Tangerine Demo 2025/api_tests/image_plane_sequence/anim_reference_image_plane.001.jpg"
+imgPath = "E:/TEMP/Maya/Tangerine Demo 2025/api_samples/image_plane_sequence/anim_reference_image_plane.001.jpg"
 
 ref = document.animation_references.register(imgPath)
 ref.label = "animatic"
@@ -997,7 +972,7 @@ from tang_core.document.get_document import get_document
 from meta_nodal_py import Imath, ImageSequenceToImagePath, Path, CurrentFrame, FloatToInt, Node
 from tang_core.document.document import Undoable
 
-image_plane_sequence_path = "E:/TEMP/Maya/Tangerine Demo 2025/api_tests/image_plane_sequence/ctr_anim_scenettes-demo-chars_jb-capy-cute_v000.###.jpg"
+image_plane_sequence_path = "E:/TEMP/Maya/Tangerine Demo 2025/api_samples/image_plane_sequence/ctr_anim_scenettes-demo-chars_jb-capy-cute_v000.###.jpg"
 
 document = get_document()
 
