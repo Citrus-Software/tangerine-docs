@@ -1,13 +1,16 @@
 ---
-sidebar_position: 4
+sidebar_position: 1
 ---
-# Tangerine Outputs
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Alembics Export
 
 Tangerine outputs are Alembic files and USD files.
 
 You can load these output files in standard industry software for further processing.
 
-## Alembic Files
+## Alembic Format
 
 ```Alembic is an open computer graphics interchange framework. Alembic distills complex, animated scenes into a non-procedural, application-independent set of baked geometric results. This ‘distillation’ of scenes into baked geometry is exactly analogous to the distillation of lighting and rendering scenes into rendered image data.
 
@@ -20,6 +23,110 @@ In an Alembic file, you will typically find two types of animation data:
 - Animation curves on transform objects
 - Baked animation of deformed meshes
 
+## Export animations to alembics
+Tangerine has an alembic export available to wreite your animation result and load it in another 3D software.
+
+(Tags)[#/sample_scripts/tags] can be used to a selector for bake action.
+You can use them to optimize your Alembic data, ensuring that only the necessary elements are included for the post-production workflow.
+See the use cases section for examples.
+
+<Tabs>
+  <TabItem value="Python Code" label="Python Code" default>
+
+```python
+from tang_core.bake import bake
+from tang_core.document.get_document import get_document
+
+outputPath = "YOUR_ABC_EXPORT_PATH.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
+nodes = [YOUR_NODE] # Tangerine nodes to export as alembic
+
+locators = False
+writeFullMatrix = False
+subsamples = [-0.125, 0.125] # subsamples to export, [] for no subsamples export
+
+document = get_document()
+
+try:
+    bake(
+        filename=outputPath,
+        roots=nodes,
+        write_uv=True, # possible to disblae uv writing
+        document=document,
+        sub_samples=subsamples,
+        write_full_matrix=writeFullMatrix, # force exporting matrix values instead of each component values
+        start_frame=document.start_frame,
+        end_frame=document.end_frame,
+    )
+except AttributeError:
+    print(
+        "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
+    )
+```
+  </TabItem>
+  <TabItem value="Package sample" label="Package sample">
+
+```python
+from PySide2.QtWidgets import QApplication
+from tang_core.asset.asset_load_mode import AssetLoadMode
+from tang_core.document.get_document import get_document
+from tang_core.bake import bake
+from meta_nodal_py import SceneGraphNode, Geometry, SplineCurve
+#  or isinstance(node, SplineCurve) or isinstance(node, SplineCurve):
+DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
+filePath = DEMO_FOLDER_PATH + "/api_samples/three_capy.shot" # shot file
+# opening the scene in tangerine
+app = QApplication.instance()
+app.main_window.import_shot_files([filePath], load_mode=AssetLoadMode.ALL)
+
+document = get_document()
+
+outputPath = DEMO_FOLDER_PATH + "api_samples/my_exported_abc.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
+assetNode = document.root().find("character_n01_jb:jb") # asset node
+
+locators = False
+writeFullMatrix = False
+subsamples = [-0.125, 0.125] # subsamples to export, [] for no subsamples export
+
+tagger = get_document().tagger
+tag = tagger.create_tag("DO_BAKE_NODE", show_in_gui=True)
+for it in assetNode.depth_first_skippable_iterator():
+    node = it.node
+    if isinstance(node, (Geometry, SceneGraphNode, SplineCurve)):
+      tagger.tag_node(tag, node)
+tagger.tag_node(tag, assetNode)
+
+# disable bake on every part of rig without geometry. Clean and optimize exported alembic files.
+noBakeTag = tagger.create_tag("DO_NOT_BAKE_NODE", show_in_gui=True)
+for node in assetNode.get_children():
+  if not node.get_name() == "geo":
+      tagger.tag_node(noBakeTag, node)
+
+
+try:
+    bake(
+        filename=outputPath,
+        exclude_tag="DO_NOT_BAKE_NODE",
+        included_spline_tag="DO_BAKE_NODE",
+        roots=[node],
+        write_uv=True, # possible to disblae uv writing
+        document=document,
+        sub_samples=subsamples,
+        write_full_matrix=writeFullMatrix,
+        start_frame=1,
+        end_frame=document.end_frame,
+    )
+except AttributeError:
+    print(
+        "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
+    )
+```
+Here we exported a full hierarchy as an Alembic file.
+See the use cases section for an example of an exported Alembic that can be used in your pipeline with tags.
+  </TabItem>
+</Tabs>
+
+## Import alembic into industry softwares
+
 ### Maya import
 
 The Alembic Import plugin allows you to load Alembic files into Maya.
@@ -27,7 +134,7 @@ Maya can then be used for lighting, rendering, and other steps in your pipeline.
 
 Find the UI menu to import it in `Cache` > `Alembic Cache` > `Alembic Import (Options)`.
 
-![console tangerine](./img/import_alembic_UI_maya.png)
+![console tangerine](./../img/import_alembic_UI_maya.png)
 
 Several import options are available to control how Alembic data is loaded.
 
@@ -100,7 +207,7 @@ Houdini works with [Alembic nodes](https://www.sidefx.com/docs/houdini/io/alembi
 You can load Alembic files exported from Tangerine and add physical dynamics, effects, and more.
 
 Here is an example of merging animation into a Houdini shot file:
-![Houdini Alembics](./img/houdini_alembics.png)
+![Houdini Alembics](./../img/houdini_alembics.png)
 
 :::info
 There is a 1:100 scale factor between Tangerine and Houdini.
@@ -157,12 +264,12 @@ Nuke is used for compositing and supports 3D objects that you can integrate into
 - To load a camera, use a **Camera** (Camera 3D) node.
 - To load a hierarchy of transforms, use a **ReadGeo** node.
 
-![Nuke Alembics](./img/nuke_alembics.png)
+![Nuke Alembics](./../img/nuke_alembics.png)
 
 :::tip
 If your compositing workflow relies on selecting objects in an Alembic hierarchy, use the following code to save the selection before refreshing any node.
 
-![Nuke Alembic Scene Hierarchy](./img/nuke_alembic_scene_hierarchy.png)
+![Nuke Alembic Scene Hierarchy](./../img/nuke_alembic_scene_hierarchy.png)
 
 ```python
 import nuke
@@ -178,4 +285,4 @@ selectionDict[node] = abcItems
 Blender is used for lighting, rendering, and other tasks.
 You can import Alembic files exported from Tangerine into [Blender](https://docs.blender.org/manual/en/latest/files/import_export/alembic.html#importing-alembic-files).
 
-...detailes to come...
+...details to come...
