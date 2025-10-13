@@ -36,18 +36,18 @@ During production, you may need to:
     # -*- coding: utf-8 -*-
     import json
 
-    def checkAnimationOnMikanVisibility(animFile):
+  def check_animation_on_mikan_visibility(anim_file):
 
-        control = "world"
-        plug = "mikan_vis"
-        for asset in animFile["assets"]:
-            # searching in animation curves if this plug has data
-            plugAnimCurve = animFile["assets"][asset].get("action", []).get("anims", []).get("%s.%s" % (control, plug), [])
-            if plugAnimCurve:
-                # parsing anim curve values
-                for keyData in plugAnimCurve:
-                    print("%s key on %s at time %s" % (asset + "." + control + "." + plug, keyData[1], keyData[0]))
-            else:
+    control = "world"
+    plug = "mikan_vis"
+    for asset in anim_file["assets"]:
+      # searching in animation curves if this plug has data
+      plug_anim_curve = anim_file["assets"][asset].get("action", []).get("anims", []).get("%s.%s" % (control, plug), [])
+      if plug_anim_curve:
+        # parsing anim curve values
+        for key_data in plug_anim_curve:
+          print("%s key on %s at time %s" % (asset + "." + control + "." + plug, key_data[1], key_data[0]))
+      else:
                 # searching if their is a static value for this plug set
                 plugStaticValue = animFile["assets"][asset].get("action", []).get("values", []).get("%s.%s" % (control, plug), [])
                 if plugStaticValue:

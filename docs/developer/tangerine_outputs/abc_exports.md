@@ -33,95 +33,82 @@ See the use cases section for examples.
 <Tabs>
   <TabItem value="Python Code" label="Python Code" default>
 
-```python
-from tang_core.bake import bake
-from tang_core.document.get_document import get_document
+    ```python
+    from tang_core.document.get_document import get_document
+    from tang_core.bake import bake
 
-outputPath = "YOUR_ABC_EXPORT_PATH.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
-nodes = [YOUR_NODE] # Tangerine nodes to export as alembic
+    output_path = "YOUR_ABC_EXPORT_PATH.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
 
-locators = False
-writeFullMatrix = False
-subsamples = [-0.125, 0.125] # subsamples to export, [] for no subsamples export
+    document = get_document()
 
-document = get_document()
+    nodes = [document.root().find("YOUR_ROOT_NODE_NAME")] # Tangerine nodes to export as alembic
+    locators = False
+    write_full_matrix = False
+    subsamples = [-0.125, 0.125] # subsamples to export, [] for no subsamples export
 
-try:
-    bake(
-        filename=outputPath,
+    try:
+      bake(
+        filename=output_path,
         roots=nodes,
+        exclude_tag=None, # find sample in advanced usecases to filter on nodes
+        included_spline_tag=None, # find sample in advanced usecases to filter on nodes
         write_uv=True, # possible to disblae uv writing
         document=document,
         sub_samples=subsamples,
-        write_full_matrix=writeFullMatrix, # force exporting matrix values instead of each component values
+        write_full_matrix=write_full_matrix, # force exporting matrix values instead of each component values
         start_frame=document.start_frame,
         end_frame=document.end_frame,
-    )
-except AttributeError:
-    print(
-        "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
-    )
-```
+        )
+    except AttributeError:
+        print(
+            "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
+        )
+    ```
   </TabItem>
   <TabItem value="Package sample" label="Package sample">
 
-```python
-from PySide2.QtWidgets import QApplication
-from tang_core.asset.asset_load_mode import AssetLoadMode
-from tang_core.document.get_document import get_document
-from tang_core.bake import bake
-from meta_nodal_py import SceneGraphNode, Geometry, SplineCurve
-#  or isinstance(node, SplineCurve) or isinstance(node, SplineCurve):
-DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
-filePath = DEMO_FOLDER_PATH + "/api_samples/three_capy.shot" # shot file
-# opening the scene in tangerine
-app = QApplication.instance()
-app.main_window.import_shot_files([filePath], load_mode=AssetLoadMode.ALL)
+    ```python
+    from PySide2.QtWidgets import QApplication
+    from tang_core.asset.asset_load_mode import AssetLoadMode
+    from tang_core.document.get_document import get_document
+    from tang_core.bake import bake
+    from meta_nodal_py import SceneGraphNode, Geometry, SplineCurve
+    #  or isinstance(node, SplineCurve) or isinstance(node, SplineCurve):
+    demo_folder_path = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
+    file_path = demo_folder_path + "/api_samples/three_capy.shot" # shot file
+    # opening the scene in tangerine
+    app = QApplication.instance()
+    app.main_window.import_shot_files([file_path], load_mode=AssetLoadMode.ALL)
 
-document = get_document()
+    document = get_document()
 
-outputPath = DEMO_FOLDER_PATH + "api_samples/my_exported_abc.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
-assetNode = document.root().find("character_n01_jb:jb") # asset node
+    output_path = demo_folder_path + "/api_samples/my_exported_abc.abc" # Path on the server where the alembic file will be saved. Folders should exists before export.
+    asset_node = document.root().find("character_n01_jb:jb") # asset node
 
-locators = False
-writeFullMatrix = False
-subsamples = [-0.125, 0.125] # subsamples to export, [] for no subsamples export
+    locators = False
+    write_full_matrix = False
+    subsamples = [-0.125, 0.125] # subsamples to export, [] for no subsamples export
 
-tagger = get_document().tagger
-tag = tagger.create_tag("DO_BAKE_NODE", show_in_gui=True)
-for it in assetNode.depth_first_skippable_iterator():
-    node = it.node
-    if isinstance(node, (Geometry, SceneGraphNode, SplineCurve)):
-      tagger.tag_node(tag, node)
-tagger.tag_node(tag, assetNode)
-
-# disable bake on every part of rig without geometry. Clean and optimize exported alembic files.
-noBakeTag = tagger.create_tag("DO_NOT_BAKE_NODE", show_in_gui=True)
-for node in assetNode.get_children():
-  if not node.get_name() == "geo":
-      tagger.tag_node(noBakeTag, node)
-
-
-try:
-    bake(
-        filename=outputPath,
-        exclude_tag="DO_NOT_BAKE_NODE",
-        included_spline_tag="DO_BAKE_NODE",
-        roots=[node],
+    try:
+      bake(
+        filename=output_path,
+        exclude_tag=None, # find sample in advanced usecases to filter on nodes
+        included_spline_tag=None, # find sample in advanced usecases to filter on nodes
+        roots=[asset_node],
         write_uv=True, # possible to disblae uv writing
         document=document,
         sub_samples=subsamples,
-        write_full_matrix=writeFullMatrix,
+        write_full_matrix=write_full_matrix,
         start_frame=1,
         end_frame=document.end_frame,
-    )
-except AttributeError:
-    print(
-        "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
-    )
-```
-Here we exported a full hierarchy as an Alembic file.
-See the use cases section for an example of an exported Alembic that can be used in your pipeline with tags.
+      )
+    except AttributeError:
+        print(
+            "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
+        )
+    ```
+    Here we exported a full hierarchy as an Alembic file.
+    See the use cases section for an example of an exported Alembic that can be used in your pipeline with tags.
   </TabItem>
 </Tabs>
 
@@ -220,26 +207,27 @@ Use a scale node to adjust the Alembic node to the correct scale after importing
 
 # set load mode 0: Shapes only, 1: Shapes and TRansforms, 2: Transforms only.
 import hou
-resize = parentNode.createNode("xform", node_name="resize")
+resize = parent_node.createNode("xform", node_name="resize")
+
 setsize = resize.parm("scale")
 setsize.set(10)
 
-parentNode = hou.node(parentNodePath)
-  newNode = parentNode.createNode(node_type_name=newNodeType, node_name=newNodeName)
-  for attrName, attrValue in six.iteritems(kwargs):
-      newNode.parm(attrName).set(attrValue)
-  return newNode
+parent_node = hou.node(parent_node_path)
+new_node = parent_node.createNode(node_type_name=new_node_type, node_name=new_node_name)
+for attr_name, attr_value in six.iteritems(kwargs):
+  new_node.parm(attr_name).set(attr_value)
+return new_node
 
-abcNode.parm("abcxform").set(abcxform)
+abc_node.parm("abcxform").set(abcxform)
 
-abcNode = soft.createNode(
-                parentNodePath, "alembic", namespace, fileName=os.path.join(abcAnimationFolder, abcFilename)
-            )
+abc_node = soft.createNode(
+  parent_node_path, "alembic", namespace, fileName=os.path.join(abc_animation_folder, abc_filename)
+)
 
 # set load mode 0: Shapes only, 1: Shapes and TRansforms, 2: Transforms only.
-abcNode.parm("abcxform").set(abcxform)
+abc_node.parm("abcxform").set(abcxform)
 
-transform = soft.createNode(parentNodePath, "xform", namespace + "_scale")
+transform = soft.createNode(parent_node_path, "xform", namespace + "_scale")
 transform.parm("scale").setExpression('ch("../../scale_world/scale")')
 
 transform.parm("tx").setExpression('ch("../../offset_world/tx")')
@@ -250,7 +238,7 @@ transform.parm("ry").setExpression('ch("../../offset_world/ry")')
 transform.parm("rz").setExpression('ch("../../offset_world/rz")')
 transform.parm("xOrd").set(3)
 
-parentNode.layoutChildren()
+parent_node.layoutChildren()
 
 # set camera near plane scale factor
 cameraShape = hou.node("/obj/camera/.../cameraShape/")

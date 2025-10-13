@@ -35,26 +35,26 @@ First exports alembic files with custom content using tags
     from tang_core.document.get_document import get_document
 
     from meta_nodal_py import SceneGraphNode, Geometry, SplineCurve
-    def getAllHierarchy(node, nodeType=None):
+    def get_all_hierarchy(node, node_type=None):
             result = []
-            if nodeType == "mesh":
-                classInstance = Geometry
-            elif nodeType == "spline":
-                classInstance = SplineCurve
-            elif not nodeType == "group":
-                classInstance = SceneGraphNode
+            if node_type == "mesh":
+                class_instance = Geometry
+            elif node_type == "spline":
+                class_instance = SplineCurve
+            elif not node_type == "group":
+                class_instance = SceneGraphNode
             else:
-                classInstance = None
+                class_instance = None
 
             for it in node.depth_first_skippable_iterator():
                 node = it.node
-                if not isinstance(node, SceneGraphNode) and not isinstance(node, classInstance):
+                if not isinstance(node, SceneGraphNode) and not isinstance(node, class_instance):
                     it.skip_children()
-                elif (classInstance is not None and isinstance(node, classInstance)):
+                elif (class_instance is not None and isinstance(node, class_instance)):
                     result.append(node)
             return result
 
-    def setBakeTagOnNode(bake, node, tagger=None):
+    def set_bake_tag_on_node(bake, node, tagger=None):
         """Helper function to set the :param node: tags "do_bake" and "do_not_bake" according to the :param bakable:
         Perform tag existence check before tagging or untagging.
         if you intend to use this method on a lot of nodes, please provide a tagger with the tags "do_bake" and
@@ -92,39 +92,39 @@ First exports alembic files with custom content using tags
 
     document = get_document()
 
-    capyJbAssetNode = document.root().find("character_n01_jb:jb")
-    yuzuAssetNode = document.root().find("prop_n01_yuzu_logo:yuzu_logo")
-    nodes = [capyJbAssetNode, yuzuAssetNode]
+    capy_jb_asset_node = document.root().find("character_n01_jb:jb")
+    yuzu_asset_node = document.root().find("prop_n01_yuzu_logo:yuzu_logo")
+    nodes = [capy_jb_asset_node, yuzu_asset_node]
 
     tagger = document.tagger
     tagger.create_tag("do_not_bake", show_in_gui=False)
     tagger.create_tag("do_bake", show_in_gui=False)
 
-    deformedGeometryNodes = []
-    allGeometryChildren = []
-    notGeoTranformsHierarchy = []
+    deformed_geometry_nodes = []
+    all_geometry_children = []
+    not_geo_transforms_hierarchy = []
 
     with AbcFilesKeepOpen(document) as abc_files_keep_open:
         for node in nodes:
-            nothingToBake = True
+            nothing_to_bake = True
             for node in node.get_children():
                 # disable bake on every part of rig without geometry. Clean and optimize exported alembic files.
                 if not node.get_name() == "geo":
-                    setBakeTagOnNode(False, node, tagger)
+                    set_bake_tag_on_node(False, node, tagger)
                     continue
 
                 # Get only the "geo" children, to filter parsing on geometry in this sample.
-                geoChildren = getAllHierarchy(node, nodeType="mesh")
-                for child in geoChildren:
-                    allGeometryChildren.append(child)
+                geo_children = get_all_hierarchy(node, node_type="mesh")
+                for child in geo_children:
+                    all_geometry_children.append(child)
                     if isinstance(child, Geometry):
                         try:
                             if is_geom_mesh_modified_from_abc_source(child, abc_files_keep_open):
-                                deformedGeometryNodes.append(child)
+                                deformed_geometry_nodes.append(child)
                         except TangValueError as err:
                             # If the node is a Locator, an exception is also raised,
-                            inputPlug = child.mesh_in.get_plug_input()
-                            if inputPlug and isinstance(inputPlug.get_node(), CrossShapeTool):
+                            input_plug = child.mesh_in.get_plug_input()
+                            if input_plug and isinstance(input_plug.get_node(), CrossShapeTool):
                                 print("Ignoring locator %s", child.get_name())
 
 
@@ -132,19 +132,19 @@ First exports alembic files with custom content using tags
     # for node in nodes:
     #     children = getAllHierarchy(node, nodeType="spline")
 
-    abcExportFolder = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_samples/abc_export_usecase/"
+    abc_export_folder = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_samples/abc_export_usecase/"
 
     # First export, we want only transforms in the hierarchy of "geo" node
-    for node in allGeometryChildren:
+    for node in all_geometry_children:
         print(node.get_full_name())
-        setBakeTagOnNode(False, node, tagger) # we add a tag on do_not_bake that we will use as a filter in bake abc file
+        set_bake_tag_on_node(False, node, tagger) # we add a tag on do_not_bake that we will use as a filter in bake abc file
 
     try:
         bake(
-            filename=abcExportFolder + "character_n01_jb_transforms.abc",
+            filename=abc_export_folder + "character_n01_jb_transforms.abc",
             exclude_tag="do_not_bake",
             included_spline_tag="do_bake",
-            roots=[capyJbAssetNode],
+            roots=[capy_jb_asset_node],
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
@@ -159,10 +159,10 @@ First exports alembic files with custom content using tags
 
     try:
         bake(
-            filename=abcExportFolder + "prop_n01_yuzu_logo_transforms.abc",
+            filename=abc_export_folder + "prop_n01_yuzu_logo_transforms.abc",
             exclude_tag="do_not_bake",
             included_spline_tag="do_bake",
-            roots=[yuzuAssetNode],
+            roots=[yuzu_asset_node],
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
@@ -176,16 +176,16 @@ First exports alembic files with custom content using tags
         )
 
     # Second export only deformed mesh for jb capy
-    for node in deformedGeometryNodes:
+    for node in deformed_geometry_nodes:
         # other geometry still have the do_not_bake_tag.
-        setBakeTagOnNode(True, node, tagger) # we add a tag on do_not_bake that we will use as a filter in bake abc file
+        set_bake_tag_on_node(True, node, tagger) # we add a tag on do_not_bake that we will use as a filter in bake abc file
 
     try:
         bake(
-            filename=abcExportFolder + "character_n01_jb_onlydeformed.abc",
+            filename=abc_export_folder + "character_n01_jb_onlydeformed.abc",
             exclude_tag="do_not_bake",
             included_spline_tag="do_bake",
-            roots=[capyJbAssetNode],
+            roots=[capy_jb_asset_node],
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
@@ -198,16 +198,16 @@ First exports alembic files with custom content using tags
             "Error exporting node %s, please check the hierarchy", str([node.get_name() for node in nodes])
         )
     # Third export all nodes in geometry
-    for node in allGeometryChildren:
+    for node in all_geometry_children:
         # other geometry still have the do_not_bake_tag.
-        setBakeTagOnNode(True, node, tagger) # we add a tag on do_not_bake that we will use as a filter in bake abc file
+        set_bake_tag_on_node(True, node, tagger) # we add a tag on do_not_bake that we will use as a filter in bake abc file
 
     try:
         bake(
-            filename=abcExportFolder + "character_n01_jb_all.abc",
+            filename=abc_export_folder + "character_n01_jb_all.abc",
             exclude_tag="do_not_bake",
             included_spline_tag="do_bake",
-            roots=[capyJbAssetNode],
+            roots=[capy_jb_asset_node],
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
@@ -222,10 +222,10 @@ First exports alembic files with custom content using tags
 
     try:
         bake(
-            filename=abcExportFolder + "prop_n01_yuzu_logo_all.abc",
+            filename=abc_export_folder + "prop_n01_yuzu_logo_all.abc",
             exclude_tag="do_not_bake",
             included_spline_tag="do_bake",
-            roots=[yuzuAssetNode],
+            roots=[yuzu_asset_node],
             write_uv=True, # possible to disblae uv writing
             document=document,
             sub_samples=[],
@@ -274,28 +274,28 @@ Applying animation to our renderable meshes is done in two steps:
 
 
     ```python
-    def disconnectCustomAttributes(attributes, topNode):
+    def disconnect_custom_attributes(attributes, top_node):
         """
         It is necessary to unplug attribute connections in destination before tu plus an alembic
         cause mergeAbc plug-in won't connect an attribute if there is a destination pluged in the attribute.
         """
-        attributesDict = {}
-        relativeNodes = cmds.listRelatives(topNode, ad=True, type="transform", f=True) or list()
-        relativeNodes = cmds.ls(relativeNodes, exactType="transform", l=True)
+        attributes_dict = {}
+        relative_nodes = cmds.listRelatives(top_node, ad=True, type="transform", f=True) or list()
+        relative_nodes = cmds.ls(relative_nodes, exactType="transform", l=True)
 
-        for node in relativeNodes:
+        for node in relative_nodes:
             for attribute in attributes:
                 if cmds.attributeQuery(attribute, n=node, ex=True):
                     connections = cmds.listConnections(node + "." + attribute, p=True, source=False)
                     if not connections:
                         continue
-                    attributesDict.setdefault(node, []).append((attribute, connections))
+                    attributes_dict.setdefault(node, []).append((attribute, connections))
                     for connection in connections:
                         cmds.disconnectAttr(node + "." + attribute, connection)
 
-        return attributesDict
+        return attributes_dict
 
-    def connectCustomAttributes(connectionsDict):
+    def connect_custom_attributes(connections_dict):
         """
         We reconnecte attribut desination after plug alembic node
         """

@@ -2,36 +2,36 @@ from math import cos, sin, radians
 import json
 import random
 
-def getTransformAttributes(nodeName):
+def get_transform_attributes(node_name):
     """Get the transform attributes list for a node.
     This function return an empty list if the node is not a transform node.
     Will list only usable attributes (input cant be modified, not linked by other node).
-    param nodeName: string, The name of the node
+    param node_name: string, The name of the node
     return: list, list of attributes short names
     """
-    transformAttributes = []
-    nodes = cmds.ls(nodeName, exactType="transform") + cmds.ls(nodeName, exactType="joint")
+    transform_attributes = []
+    nodes = cmds.ls(node_name, exactType="transform") + cmds.ls(node_name, exactType="joint")
 
     if not nodes:
-        return transformAttributes
+        return transform_attributes
 
     for attribute in ("t", "r", "s"):
         for dimension in ("x", "y", "z"):
-            attributeName = nodeName + "." + attribute + dimension
-            if cmds.getAttr(attributeName, lock=True):
+            attribute_name = node_name + "." + attribute + dimension
+            if cmds.getAttr(attribute_name, lock=True):
                 continue
-            connections = cmds.listConnections(attributeName, destination=False, source=True) or []
+            connections = cmds.listConnections(attribute_name, destination=False, source=True) or []
             for connection in connections:
                 if not cmds.objectType(connection, isAType="animCurve"):
                     continue
-            if not cmds.getAttr(attributeName, keyable=True):
+            if not cmds.getAttr(attribute_name, keyable=True):
                 continue
-            transformAttributes.append(attribute + dimension)
+            transform_attributes.append(attribute + dimension)
 
-    return transformAttributes
+    return transform_attributes
 
 
-def getAnimCurveValuesList(node="", attribut="", animCurve=""):
+def get_anim_curve_values_list(node="", attribut="", anim_curve=""):
     """In tang, list of value is as following for a key
     [
         value, temps, tangente_gauche_x, tangente_gauche_y,
@@ -41,51 +41,51 @@ def getAnimCurveValuesList(node="", attribut="", animCurve=""):
         break_tangent (1.0 ou 0.0 pour true/false)
     ]
     """
-    curveRequested = ""
-    if animCurve:
-        curveRequested = animCurve
+    curve_requested = ""
+    if anim_curve:
+        curve_requested = anim_curve
     elif node and attribut:
-        curveRequested = "%s.%s" % (node, attribut)
-    if not curveRequested:
-        print("Missing argument in getAnimCurveValuesList")
+        curve_requested = "%s.%s" % (node, attribut)
+    if not curve_requested:
+        print("Missing argument in get_anim_curve_values_list")
         return []
 
-    modeValueDict = {"linear": 0, "auto": 1, "custom": 2, "spline": 3, "flat": 4, "step": 5, "plateau": 1}
+    mode_value_dict = {"linear": 0, "auto": 1, "custom": 2, "spline": 3, "flat": 4, "step": 5, "plateau": 1}
 
     # We force conversion to weightedTangent because we need the exact wheight to give a norm to the Tang tangent
-    cmds.keyTangent(curveRequested, e=1, weightedTangents=1)
+    cmds.keyTangent(curve_requested, e=1, weightedTangents=1)
 
-    listValues = []
-    times = cmds.keyframe(curveRequested, q=1)
-    values = cmds.keyframe(curveRequested, q=1, valueChange=1)
+    list_values = []
+    times = cmds.keyframe(curve_requested, q=1)
+    values = cmds.keyframe(curve_requested, q=1, valueChange=1)
 
     # since auto and spline mode can be slighlty different between tang and maya we convert these tangents
     # to custom to have the same shape
-    tangentsITT = cmds.keyTangent(curveRequested, itt=1, q=1)
-    tangentsOTT = cmds.keyTangent(curveRequested, ott=1, q=1)
+    tangents_itt = cmds.keyTangent(curve_requested, itt=1, q=1)
+    tangents_ott = cmds.keyTangent(curve_requested, ott=1, q=1)
     conv_type = ("auto", "spline", "plateau", "fixed")
-    conv_in_tangent_index = [(i,) for i, itt in enumerate(tangentsITT) if itt in conv_type]
-    conv_out_tangent_index = [(i,) for i, ott in enumerate(tangentsOTT) if ott in conv_type]
-    cmds.keyTangent(curveRequested, e=1, itt="fixed", index=conv_in_tangent_index)
-    cmds.keyTangent(curveRequested, e=1, ott="fixed", index=conv_out_tangent_index)
+    conv_in_tangent_index = [(i,) for i, itt in enumerate(tangents_itt) if itt in conv_type]
+    conv_out_tangent_index = [(i,) for i, ott in enumerate(tangents_ott) if ott in conv_type]
+    cmds.keyTangent(curve_requested, e=1, itt="fixed", index=conv_in_tangent_index)
+    cmds.keyTangent(curve_requested, e=1, ott="fixed", index=conv_out_tangent_index)
 
-    tangentsIA = cmds.keyTangent(curveRequested, ia=1, q=1)
-    tangentsOA = cmds.keyTangent(curveRequested, oa=1, q=1)
-    tangentsInWeight = cmds.keyTangent(curveRequested, inWeight=1, q=1)
-    tangentsOutWeight = cmds.keyTangent(curveRequested, outWeight=1, q=1)
-    tangentsITT = cmds.keyTangent(curveRequested, itt=1, q=1)  # get a new once with converted type
-    tangentsOTT = cmds.keyTangent(curveRequested, ott=1, q=1)  # get a new once with converted type
+    tangents_ia = cmds.keyTangent(curve_requested, ia=1, q=1)
+    tangents_oa = cmds.keyTangent(curve_requested, oa=1, q=1)
+    tangents_in_weight = cmds.keyTangent(curve_requested, inWeight=1, q=1)
+    tangents_out_weight = cmds.keyTangent(curve_requested, outWeight=1, q=1)
+    tangents_itt = cmds.keyTangent(curve_requested, itt=1, q=1)  # get a new once with converted type
+    tangents_ott = cmds.keyTangent(curve_requested, ott=1, q=1)  # get a new once with converted type
 
     # to take into consideration tangeant coeff are independant from eachother, or linked
-    weightLocks = cmds.keyTangent(curveRequested, q=1, l=1)
-    tangentsRatioOIT = 0.333333333  # no matter value, will be recompute in tang
-    tangentsRatioOTT = 0.333333333  # no matter value, will be recompute in tang
+    weight_locks = cmds.keyTangent(curve_requested, q=1, l=1)
+    tangents_ratio_oit = 0.333333333  # no matter value, will be recompute in tang
+    tangents_ratio_ott = 0.333333333  # no matter value, will be recompute in tang
 
     for t in range(len(times)):
-        keyTime = times[t]
+        key_time = times[t]
         value = values[t]
-        weightLock = float(weightLocks[t])
-        if not animCurve:
+        weight_lock = float(weight_locks[t])
+        if not anim_curve:
             if (
                 cmds.attributeQuery(attribut, node=node, attributeType=True) == "enum"
                 or cmds.attributeQuery(attribut, node=node, attributeType=True) == "long"
@@ -96,20 +96,20 @@ def getAnimCurveValuesList(node="", attribut="", animCurve=""):
 
         if not type(value) is float:
             # do not need tangeant infos
-            listValues.append(
-                [keyTime, value]
+            list_values.append(
+                [key_time, value]
             )  # inverse regarding float curve value (under) because developped like that in tang
             continue
 
-        itt = tangentsITT[t]
-        ott = tangentsOTT[t]
-        left_tangent_mode = modeValueDict.get(itt, 2)
-        right_tangent_mode = modeValueDict.get(ott, 2)
+        itt = tangents_itt[t]
+        ott = tangents_ott[t]
+        left_tangent_mode = mode_value_dict.get(itt, 2)
+        right_tangent_mode = mode_value_dict.get(ott, 2)
 
-        ia = tangentsIA[t]
-        oa = tangentsOA[t]
-        inweight = tangentsInWeight[t]
-        outweight = tangentsOutWeight[t]
+        ia = tangents_ia[t]
+        oa = tangents_oa[t]
+        inweight = tangents_in_weight[t]
+        outweight = tangents_out_weight[t]
 
         input_angle = radians(float(ia) + 180.0)
         output_angle = radians(float(oa))
@@ -122,53 +122,53 @@ def getAnimCurveValuesList(node="", attribut="", animCurve=""):
         dxr = output_weight * round(cos(output_angle), 6)
         dyr = output_weight * round(sin(output_angle), 6)
 
-        listValues.append(
+        list_values.append(
             [
                 value,
-                keyTime,
+                key_time,
                 dxl,
                 dyl,
                 dxr,
                 dyr,
                 left_tangent_mode,
                 right_tangent_mode,
-                tangentsRatioOIT,
-                tangentsRatioOTT,
-                weightLock,
+                tangents_ratio_oit,
+                tangents_ratio_ott,
+                weight_lock,
             ]
         )
 
-    return listValues
+    return list_values
 
-def getAnimLayers(layersInfos):
+def get_anim_layers(layers_infos):
     layers = {}
-    for layer in layersInfos:
+    for layer in layers_infos:
         if layer == "BaseAnimation":
             continue
         color = ([random.random() for i in range(0, 4)])
-        tangName = layersInfos[layer]["name"]
-        layers[tangName] = {
+        tang_name = layers_infos[layer]["name"]
+        layers[tang_name] = {
             "nice_name": layer,
             "color": color,
-            "plugs": layersInfos[layer]["plugs"],
+            "plugs": layers_infos[layer]["plugs"],
             "action": {
                 "values": {
-                    "%s.enable" % tangName: True,
+                    "%s.enable" % tang_name: True,
                 },
                 "anims": {},
             },
         }
-        weightCurves = cmds.listConnections("%s.weight" % layer, type="animCurve") or []
-        if not weightCurves:
-            layers[tangName]["action"]["values"]["%s.weight" % tangName] = cmds.getAttr("%s.weight" % layer)
+        weight_curves = cmds.listConnections("%s.weight" % layer, type="animCurve") or []
+        if not weight_curves:
+            layers[tang_name]["action"]["values"]["%s.weight" % tang_name] = cmds.getAttr("%s.weight" % layer)
         else:
-            layers[tangName]["action"]["anims"]["%s.weight" % tangName] = self.getAnimCurveValuesList(
-                animCurve=weightCurves[0]
+            layers[tang_name]["action"]["anims"]["%s.weight" % tang_name] = self.get_anim_curve_values_list(
+                anim_curve=weight_curves[0]
             )
 
         return layers
 
-def storeAnimationDict():
+def store_animation_dict():
     """
     Store in json file tang animation et set attribute on controls defined with mikan attributes.
     One json file will be exported per asset (top node with gem attr asset) at
@@ -176,8 +176,7 @@ def storeAnimationDict():
     Some maya attribute could not exists in tang (or wont have the same name) and won't be intepretd.
     Json file exported can be loaded in tang as an action.
     """
-
-    versionOverride = {}
+    version_override = {}
     allAnimLayers = cmds.ls(type="animLayer")
     animLayersAssignementDict = {}
     layerIndex = 1

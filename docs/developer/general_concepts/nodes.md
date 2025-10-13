@@ -42,27 +42,28 @@ import meta_nodal_py as kl
 
 # get a root node
 document = get_document()
-rootNodeName = "[name_of_a_root_node]" # this is the name of a root node
-assetNode = document.root().find(rootNodeName) # finding your node
+root_node_name = "YOUR_ROOT_NODE_NAME" # this is the name of a root node
+asset_node = document.root().find(root_node_name) # finding your node
 
 # create a node
-trash = kl.SceneGraphNode(document.root(), "trash")
+trash = kl.SceneGraphNode(asset_node, "trash")
 
 # delete a node
 trash.remove_from_parent()
 del trash
 
 # list children
-children = assetNode.get_children()
+children = asset_node.get_children()
 for child in children:
     print(child.get_full_name())
 
 # hide a node
-assetNode.show.set_value(False)
+with document.modify("set value on ctrls") as modifier: # modifier needed to have UI update
+  asset_node.show.set_value(False)
 
 # get a controller in asset hierarchy, using Mikan Callbacks
 ctrl = "CONTROL_NAME" #
-node = Callbacks().find_controller_in_asset(assetNode, ctrl)
+node = Callbacks().find_controller_in_asset(asset_node, ctrl)
 
 # Plugs
 # list plugs of a node
@@ -92,27 +93,28 @@ app.main_window.import_shot_files([filePath], load_mode=tangLoadMode)
 document = get_document()
 
 # create a node
-trash = kl.SceneGraphNode(document.root(), "trash")
+trash = kl.SceneGraphNode(asset_node, "trash")
 
 # delete a node
 trash.remove_from_parent()
 del trash
 
 # get a root node
-rootNodeName = "character_n01_jb:jb" # this is the name of a root node
-assetNode = document.root().find(rootNodeName) # finding your node
+root_node_name = "character_n01_jb:jb" # this is the name of a root node
+asset_node = document.root().find(root_node_name) # finding your node
 
 # list children
-children = assetNode.get_children()
+children = asset_node.get_children()
 for child in children:
     print(child.get_full_name())
 
 # hide a node
-assetNode.show.set_value(False)
+with document.modify("set value on ctrls") as modifier: # modifier needed to have UI update
+  asset_node.show.set_value(False)
 
 # get a controller in asset hierarchy
 ctrl = "move" # name of a controler you are searching for
-ctrlNode = Callbacks().find_controller_in_asset(assetNode, ctrl)
+ctrlNode = Callbacks().find_controller_in_asset(asset_node, ctrl)
 
 # Plugs
 # list plugs

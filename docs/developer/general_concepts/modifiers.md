@@ -16,13 +16,13 @@ from tang_core.anim import is_keyable, set_animated_plug_value
 from tang_core.document.get_document import get_document
 
 # selecting a plug
-doc = get_document()
-node = doc.root().find_first("c_face_up")
+document = get_document()
+node = document.root().find_first("c_face_up")
 attribute = "el_blink_R"
 plug = node.get_plug(attribute)
 
 # add animation on plug in modifier
-with doc.modify("create anim curves") as modifier:
+with document.modify("create anim curves") as modifier:
     if not is_keyable(plug):
         print("not keayble plug, skipping")
     else:

@@ -14,30 +14,31 @@ Create a `PlayblastSettings` object to specify the characteristics of your playb
 from tang_core.playblast.playblast_settings import PlayblastSettings
 from tang_core.document.get_document import get_document
 
+document = get_document()
 width = 1280
 height = 720
 
 document = get_document()
-startFrame = document.start_frame
-endFrame = document.end_frame
+start_frame = document.start_frame
+end_frame = document.end_frame
 
 
-playblastSettings = PlayblastSettings(start=startFrame, end=endFrame, width=width, height=height)
+playblast_settings = PlayblastSettings(start=start_frame, end=end_frame, width=width, height=height)
 
-playblastSettings.export_audio = False
+playblast_settings.export_audio = False
 
 
-playblastSettings.texture = True # default value
-playblastSettings.smooth = True # default value
+playblast_settings.texture = True # default value
+playblast_settings.smooth = True # default value
 
-playblastSettings.auto_open = False # Open folder of exported playblast at the end # default value
-playblastSettings.overwrite = True # Authorize overwriting output files is already exists # default value
-playblastSettings.ignore_types = "Joint,Curve" # Do not include in viewport these types of objects, could be also grid,tool,corneas,__dummies__ # default value
+playblast_settings.auto_open = False # Open folder of exported playblast at the end # default value
+playblast_settings.overwrite = True # Authorize overwriting output files is already exists # default value
+playblast_settings.ignore_types = "Joint,Curve" # Do not include in viewport these types of objects, could be also grid,tool,corneas,__dummies__ # default value
 
-playblastSettings.enable_ssao = True # default value
-playblastSettings.ssao_kernel_size = 64 # default value
-playblastSettings.ssao_power = 2.0 # default value
-playblastSettings.ssao_radius = 0.3 # default value
+playblast_settings.enable_ssao = True # default value
+playblast_settings.ssao_kernel_size = 64 # default value
+playblast_settings.ssao_power = 2.0 # default value
+playblast_settings.ssao_radius = 0.3 # default value
 ```
 
 ## Launch playblast settings
