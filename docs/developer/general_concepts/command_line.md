@@ -4,7 +4,7 @@ sidebar_position: 5
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Command Line
+# Command Line Arguments
 
 You can use scripting in GUI mode or in batch mode.
 

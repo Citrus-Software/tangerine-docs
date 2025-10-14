@@ -4,7 +4,7 @@ sidebar_position: 3
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Modifers
+# Modifiers
 
 For a matter of optimisation, stack clarity and engine and UI updates, you will need to encapsulate parts of script where you are modifying a document.
 When closing a modifier, Tangerine will call every needed callback to compute values and update UI.

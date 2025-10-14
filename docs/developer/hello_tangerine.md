@@ -58,3 +58,11 @@ with doc.modify("select controller") as modifier:
 	modifier.select_nodes([controller])
 ```
 :::
+
+In case you want a logged feedback of the script, just open the "Log View" window via the Windows menu. It appears by default next to the Tags window (in the top left tabbed views).
+
+If you don't launch Tangerine.exe but TangerineConsole.exe the log is written in the system console too (be careful in this case: if you accidentaly close the console, Tangerine is closed too).
+
+A log file is also written in the %TEMP%/Tangerine/logs folder.
+
+The next section explains the API structure and introduces some key concepts...
