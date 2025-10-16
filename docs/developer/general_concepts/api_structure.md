@@ -28,19 +28,25 @@ For example, in the following script we load the modeling of JB the Capy, the as
 ```
 from meta_nodal_py import load_abc
 import os
-load_abc(document.root(), os.getcwd() + "/demo/assets/capy_jb/capy_modeling.abc")
-document.rig_has_changed_without_modifiers()
+
+capy_model_path = os.getcwd() + "/demo/assets/capy_jb/capy_modeling.abc"  # meshes of JB the Capy
+parent_node = document.root()  # the parent node for the node hierarchy in the alembic file
+load_abc(parent_node, capy_model_path)  # load the alembic file of the Capy, it only contains meshes (no rig)
+document.rig_has_changed_without_modifiers()  # update internals (GUI, etc.)
 ```
 You can copy/paste this script in the Command Line window and press Enter, just like you did on the previous page.
-Note, by the way, that the `document` variable is always predefined in the Command Line window.
+Note, by the way, that the `document` variable is always predefined in the Command Line window (but it is not predefined in usual python script files where `get_document()` should be used then).
 
-Here is another example of the meta_nodal API, using the Imath submodule, it double the scale of the imported 'geo' node from the previous script:
+Here is another example of the meta_nodal API, using the Imath submodule, it doubles the scale of the imported 'geo' node from the previous script:
 ```
 from meta_nodal_py.Imath import V3f, M44f
-xform = M44f()
-xform.setScale(V3f(2.0))
-document.root().find('geo').transform.set_value(xform)
-document.rig_has_changed_without_modifiers()
+
+xform = M44f()  # create a 4x4 matrix
+xform.setScale(V3f(2.0))  # set its scale to 2.0 on all axis
+parent_node = document.root()  # get the parent node we used in load_abc (see above)
+geo_node = parent_node.find('geo')  # find its child node named 'geo'
+geo_node.transform.set_value(xform)  # set its transform to the matrix we made previously
+document.rig_has_changed_without_modifiers()  # update internals (GUI, etc.)
 ```
 Note that we always need to call `document.rig_has_changed_without_modifiers()` to update the internals of Tangerine, including the GUI, when we use the meta_nodal API and when no modifier is used.
 The modifier concept will be explained in the next sections, it's part of the Tangerine API.
@@ -59,5 +65,7 @@ from tang_core.callbacks import Callbacks
 from tang_gui.get_tang_window import get_tang_window
 ```
 
-As you can see in all the scripts we've seen so far, and for all APIs, the **Document** is always the entry point. It reflects the current state of Tangerine, it holds all the data of the current shot, as well as other edition states.
-The next section details this concept.
+As you can see in all the scripts we've seen so far, and for all APIs, the **Document** is always the entry point. It reflects the current state of Tangerine, it holds all the data of the current shot, as well as other edition states (selection, undo/redo, etc.).
+**Nodes** and **Modifiers** are very important to understand too in order to navigate easily in both Tangerine and meta_nodal APIs.
+
+The next section details all these concepts.

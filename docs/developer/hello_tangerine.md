@@ -28,7 +28,7 @@ capy_path = os.getcwd() + "/demo/assets/capy_jb/capy_jb.tang"
 asset_node = doc.import_nodes("character1:capy_jb", capy_path)  
 
 # with a "modifier", we interact with the current shot to add keys:
-with doc.modify("import and anim capy") as modifier:
+with doc.modify("animate the capy") as modifier:
     controller = Callbacks().find_controller_in_asset(asset_node, "c_face_up")
     set_animated_plug_value(controller.el_blink_L, 0.0, modifier, frame=1, force_key=True)
     set_animated_plug_value(controller.el_blink_L, 1.0, modifier, frame=7)

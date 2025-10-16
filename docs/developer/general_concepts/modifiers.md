@@ -30,3 +30,7 @@ with document.modify("create anim curves") as modifier:
         set_animated_plug_value(plug, -0.0, frame=10, force_key=True, modifier=modifier)
         set_animated_plug_value(plug, -0.1, frame=12, force_key=True, modifier=modifier)
 ```
+
+:::warning
+Tangerine modifiers are **not** related to [Mikan modifiers](https://citrus-software.github.io/mikan-docs/usage/modifiers) which serve a different purpose.
+:::
