@@ -13,7 +13,7 @@ import TabItem from '@theme/TabItem';
 2. Opens the "Command Line" via the Windows menu (it should pop under the Library window and above the Picker window).
 
 3. Copy the following script, and paste it into the Command Line window and press Enter:
-```
+```python
 # some module imports:
 from tang_core.document.get_document import get_document
 from tang_core.anim import set_animated_plug_value
@@ -53,7 +53,7 @@ viewport.frame_view()
 :::info
 Optionally copy/paste this script too in the Command Line to actually select the controller and see the keys in Tangerine Timeline, Channels window and Curve Editor:
 
-```
+```python
 with doc.modify("select controller") as modifier:
 	modifier.select_nodes([controller])
 ```
@@ -65,4 +65,4 @@ If you don't launch Tangerine.exe but TangerineConsole.exe the log is written in
 
 A log file is also written in the %TEMP%/Tangerine/logs folder.
 
-The next section explains the API structure and introduces some key concepts...
+The next section explains how to run scripts beyond the Command Line window, and after that we will see the Tangerine API Structure and discover some key concepts...

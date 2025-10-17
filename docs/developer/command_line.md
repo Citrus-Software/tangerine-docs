@@ -64,7 +64,7 @@ Find in the demo package sample scripts to help you test command line
 ```
 "E:/TEMP/tangerine/Tangerine Demo 2025/Tangerine/TangerineConsole.exe" --log_to_file --kernel release -l debug --no-hidden --no-gui "E:/TEMP/tangerine/Tangerine Demo 2025/after_opening_tangerine.py" "E:/TEMP/tangerine/Tangerine Demo 2025/hook.py" "E:/TEMP/tangerine/Tangerine Demo 2025/api_samples/three_capy.shot" "E:/TEMP/tangerine/Tangerine Demo 2025/after_loading_document.py"
 ```
-![console tangerine](./../img/console_batch_tangerine.png)
+![console tangerine](./img/console_batch_tangerine.png)
 
 
 ### Help

@@ -25,7 +25,7 @@ As an example, [**Mikan**](https://citrus-software.github.io/mikan-docs/), the o
 The meta_nodal API is mainly used when we want to access the rigging nodes, or math nodes and data, or any load/export of abc/usd files.
 All the meta_nodal API is in one module - **meta_nodal_py** - and it holds the **Imath** submodule for all mathematical classes and functions.
 For example, in the following script we load the modeling of JB the Capy, the asset we used in the previous page (see Hello Tangerine), by using the load_abc function from the meta_nodal API:
-```
+```python
 from meta_nodal_py import load_abc
 import os
 
@@ -38,7 +38,7 @@ You can copy/paste this script in the Command Line window and press Enter, just 
 Note, by the way, that the `document` variable is always predefined in the Command Line window (but it is not predefined in usual python script files where `get_document()` should be used then).
 
 Here is another example of the meta_nodal API, using the Imath submodule, it doubles the scale of the imported 'geo' node from the previous script:
-```
+```python
 from meta_nodal_py.Imath import V3f, M44f
 
 xform = M44f()  # create a 4x4 matrix
@@ -58,7 +58,7 @@ In fact, we use the Tangerine API most of the time, it is divided itself into tw
 - Submodules of the **tang_gui** module, which handle GUI integration and scripting of existing widgets.
 
 On the previous page (see Hello Tangerine), we have seen how the script import python modules from both of them:
-```
+```python
 from tang_core.document.get_document import get_document
 from tang_core.anim import set_animated_plug_value
 from tang_core.callbacks import Callbacks
