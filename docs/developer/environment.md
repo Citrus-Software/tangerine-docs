@@ -62,7 +62,7 @@ main_window = get_tang_window()
 def show_my_tool_window():
     my_tool_widget = QWidget(main_window)
     my_tool_widget.setWindowTitle('My Tool')
-	my_tool_widget.setFixedHeight(100)  # replace this with your layout of widgets
+    my_tool_widget.setFixedHeight(100)  # replace this with your layout of widgets
     main_window.add_dock_for_view(my_tool_widget, Qt.RightDockWidgetArea)
 
 if main_window:  # safety in case Tangerine is called in --no-gui mode
@@ -84,10 +84,86 @@ Now, you have the "My Studio" menu with the "My Tool" menu item and if you selec
 You may call .\TangerineConsole.exe instead of .\Tangerine.exe to see your script output (and errors) in the Console. Otherwise you should look at the log file in %TEMP%/Tangerine/logs
 :::
 
-## Debugging your scripts with VS Code
+Tangerine doesn't have a full blown script editor and debugger, that's because today most TDs prefer to use standard Python editors for that purpose. The main Python IDEs today are VS Code from Microsoft (free) and PyCharm from Jetbrains (a free community edition is available).
 
-TODO
+## Editing and Debugging your scripts with VS Code
 
-## Debugging your scripts with PyCharm
+You first need to have the Python langage extension from Microsoft added to VS Code.
 
-TODO
+Then, set this configuration in your `launch.json` file:
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "debugpy",
+            "name": "Attach Tangerine App",
+            "request": "attach",
+            "processId": "${command:pickProcess}",
+            "connect": { "host": "127.0.0.1", "port": 5678 }
+        }
+    ]
+}
+```
+
+As we don't provide the `debugpy` module in the Tangerine interpreter, you need to create a compatible venv (ie Python 3.9) and pip install this module in it:
+
+```
+MyScripts
+   |
+   +-- my_tool.py <= use the script above
+   |
+   +-- wait_debug.py <= see below
+   |
+   +-- .venv <= Python 3.9 virtual environment where you added the debugpy module
+   |
+   +-- .vscode
+         |	
+         +-- launch.json
+```
+
+Here is the `wait_debug.py` code:
+
+```python
+from pathlib import Path
+import os
+import site
+
+# we activate the site-packages of a compatible venv:
+here = Path(__file__).resolve().parent
+venv = here / ".venv"
+if os.name == "nt":
+    sp = venv / "Lib" / "site-packages"  # Windows: <venv>\Lib\site-packages
+else:
+    pyver = f"python{sys.version_info.major}.{sys.version_info.minor}"
+    sp = venv / "lib" / pyver / "site-packages"  # Linux: <venv>/lib/pythonX.Y/site-packages
+if sp.exists():
+    site.addsitedir(str(sp))
+	
+# we import debugpy from the venv above and wait for the connection
+import debugpy
+debugpy.listen(("127.0.0.1", "5678"))
+debugpy.wait_for_client()
+```
+
+Then, launch Tangerine with this new script **first**:
+```
+.\TangerineConsole.exe C:\MyScripts\wait_debug.py C:\MyScripts\my_tool.py
+```
+
+In VS Code, set a breakpoint anywhere in `my_tool.py`, launch "Attach Tangerine App" and select the Tangerine process in the dropdown menu ➡️ You should break on the breakpoint!
+
+:::tip
+**Aucompletion in VS Code!**
+
+In your `settings.json` add the following lines to get autocompletion with the Tangerine API (you may have to replace the path with your custom Tangerine installation directory):
+```json
+    "python.analysis.extraPaths": [
+        "C:/Program Files/Tangerine/stubs",
+    ],    
+    "python.autoComplete.extraPaths": [
+        "C:/Program Files/Tangerine/stubs",
+    ],
+```
+:::
