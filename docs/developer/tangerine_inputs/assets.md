@@ -1,11 +1,13 @@
 ---
 sidebar_position: 4
 ---
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Assets for Tangerine
 
 ## Create Assets with Mikan
 
-@max @seb add explanation here
 (**Mikan**)[https://citrus-software.github.io/mikan-docs/]
 
 ## Create Assets with Mikan

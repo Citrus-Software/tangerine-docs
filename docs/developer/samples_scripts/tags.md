@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 # Tags
 
 Tags allow you to group elements in your hierarchy for quick access.
-They can be used for various purposes, such as [baking with tags](usecase/#bake-tag-for-alembic).
+They can be used for various purposes, such as [baking with tags](../advanced_scripts/pipeline_alembics_from_tangerine#bake-abc-for-parts-of-asset-for-external-software).
 For example, Tangerine uses tags to enable fast selection in the UI.
 
 ```python

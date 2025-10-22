@@ -13,7 +13,7 @@ You can use scripting in GUI mode or in batch mode.
 
 `GUI Console Mode` : A "console" mode with main window and console window is available to have verbosity and can be usefull in your developments.
 
-`Batch Mode` : The batch mode of tangerine is also available. Every methods that are linked to the UI application part won't be available in this mode. See our code example in "batch" page to adapt your scripts to batch mode. See [Batch mode guide](batch#batch-mode).
+`Batch Mode` : The batch mode of tangerine is also available. Every methods that are linked to the UI application part won't be available in this mode. See our code example in "batch" page to adapt your scripts to batch mode. See [Batch mode guide](command_line#batch-mode).
 
 ### UI Mode
 

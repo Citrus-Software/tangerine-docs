@@ -15,7 +15,7 @@ You culd also need to automate some clean or checks before to save any version o
 
 When you want to execute code after an action manually triggered from the UI:
 
-- Replace the native menu button with your own [(see here).](environment#custom-menus)
+- Replace the native menu button with your own [(see here).](./../environment#custom-menu-and-gui)
 - Insert your custom code around the base action called by the button.
 
 Below is the code executed behind the default items.
