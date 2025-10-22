@@ -107,7 +107,7 @@ Then, set this configuration in your `launch.json` file:
 }
 ```
 
-As we don't provide the `debugpy` module in the Tangerine interpreter, you need to create a compatible venv (ie Python 3.9) and pip install this module in it:
+As we don't provide the `debugpy` module in the Tangerine interpreter, you need to create a compatible venv (ie **Python 3.9**) and pip install this module in it:
 
 ```
 MyScripts
@@ -140,9 +140,14 @@ else:
     sp = venv / "lib" / pyver / "site-packages"  # Linux: <venv>/lib/pythonX.Y/site-packages
 if sp.exists():
     site.addsitedir(str(sp))
+else:
+	raise RuntimeError("Cannot find site-packages in the venv")
 	
 # we import debugpy from the venv above and wait for the connection
-import debugpy
+try:
+    import debugpy
+except ImportError:
+    raise RuntimeError("debugpy is not installed in the venv")
 debugpy.listen(("127.0.0.1", "5678"))
 debugpy.wait_for_client()
 ```
@@ -152,7 +157,7 @@ Then, launch Tangerine with this new script **first**:
 .\TangerineConsole.exe C:\MyScripts\wait_debug.py C:\MyScripts\my_tool.py
 ```
 
-In VS Code, set a breakpoint anywhere in `my_tool.py`, launch "Attach Tangerine App" and select the Tangerine process in the dropdown menu ➡️ You should break on the breakpoint!
+In VS Code, set a breakpoint anywhere in `my_tool.py`, launch "Attach Tangerine App" and select the Tangerine process in the dropdown menu. You should break on the breakpoint!
 
 :::tip
 **Aucompletion in VS Code!**
@@ -165,5 +170,104 @@ In your `settings.json` add the following lines to get autocompletion with the T
     "python.autoComplete.extraPaths": [
         "C:/Program Files/Tangerine/stubs",
     ],
+```
+:::
+
+## Hot reload of scripts
+
+Sometimes you make changes to your script and you want Tangerine to take the changes into account without relaunching it.
+You can do that with hot reload of modules. Indeed, Tangerine uses `importlib.import_module(your_script_name)` where your_script_name is the filename of your script without the py extension. So, hot reloading a script is equivalent to reloading a python module with the same name. Enter the following in the Command Line window of Tangerine when your script has changed:
+
+```python
+import sys
+sys.modules.pop(script_name, None)
+```
+
+:::warning
+You cannot hot reload scripts where a reference to your script objects/functions has been given to the Tangerine interpreter.
+For example, in the above script my_tool.py we give a reference to the function `show_my_tool_window()` to Tangerine so this script cannot be hot reloaded. In practice, add your updatable code in another module loaded via import_module, and hot reload only this module where no reference has been given in Tangerine or if you can delete them before the reload (see example below).
+:::
+
+In the following example, the second script (my_edit.py) can be hot reloaded:
+
+1. Modify my_tool.py:
+
+```python
+from tang_gui.get_tang_window import get_tang_window
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QWidget, QPushButton
+import importlib
+
+main_window = get_tang_window()
+
+def on_clicked():
+    my_edit = importlib.import_module("my_edit")
+    my_edit.do_it()
+	
+def show_my_tool_window():
+    my_tool_widget = QWidget(main_window)
+    my_tool_widget.setWindowTitle('My Tool')
+    btn = QPushButton('Do it!', my_tool_widget)
+    btn.clicked.connect(on_clicked)
+    main_window.add_dock_for_view(my_tool_widget, Qt.RightDockWidgetArea)
+
+if main_window:  # safety in case Tangerine is called in --no-gui mode
+    from tang_gui.tang_action import add_action
+    menu_bar = main_window.menuBar()
+    my_menu = menu_bar.addMenu('My Studio')
+    my_menu.addAction(add_action(main_window, "My Tool", show_my_tool_window))
+```
+
+2. Add my_edit.py:
+
+```python
+from tang_core.document.get_document import get_document
+from tang_core.callbacks import Callbacks
+
+doc = get_document()
+
+asset_node = doc.root().find("character1:capy_jb")
+
+with doc.modify("animate the capy") as modifier:
+    controller = Callbacks().find_controller_in_asset(asset_node, "c_face_up")
+    set_animated_plug_value(controller.el_blink_L, 0.0, modifier, frame=1, force_key=True)
+    set_animated_plug_value(controller.el_blink_L, 1.0, modifier, frame=7)
+    set_animated_plug_value(controller.el_blink_L, 0.0, modifier, frame=14)
+```
+
+3. Launch Tangerine with my_tool.py as the argument.
+
+4. Import JB the Capy asset via the File menu, or by using this script in the Command Line window:
+```python
+import os
+capy_path = os.getcwd() + "/demo/assets/capy_jb/capy_jb.tang"
+document.import_nodes("character1:capy_jb", capy_path) 
+```
+
+4. Click on "Do it!", the Capy now blinks just like in Hello Tangerine
+
+5. Undo (Ctrl+Z) and select **Clear History** in the Edit menu to **remove the Tangerine reference to the modifier**
+
+6. Modify my_edit.py, put 0.5 instead of 1.0 in the second call of set_animated_plug_value (frame 7) so that the Capy will half blink.
+```python
+    # ...
+    set_animated_plug_value(controller.el_blink_L, 0.5, modifier, frame=7)
+    # ...                                          ^^^
+```
+7. Call this in the Command Line window:
+
+```python
+import sys
+sys.modules.pop("my_edit", None)
+```
+
+8. Click on "Do it!" again and see the Capy half blinks!
+
+:::tip
+The following works too, it may be more convenient because sys.modules.pop is not required then:
+```python
+def on_clicked():
+    import importlib, my_edit
+    importlib.reload(my_edit)  # force the reload of the module (even if it has not changed)
 ```
 :::
