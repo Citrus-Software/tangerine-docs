@@ -101,7 +101,8 @@ Then, set this configuration in your `launch.json` file:
             "name": "Attach Tangerine App",
             "request": "attach",
             "processId": "${command:pickProcess}",
-            "connect": { "host": "127.0.0.1", "port": 5678 }
+            "connect": { "host": "127.0.0.1", "port": 5678 },
+            "justMyCode": false
         }
     ]
 }
@@ -148,7 +149,7 @@ try:
     import debugpy
 except ImportError:
     raise RuntimeError("debugpy is not installed in the venv")
-debugpy.listen(("127.0.0.1", "5678"))
+debugpy.listen(("127.0.0.1", 5678))
 debugpy.wait_for_client()
 ```
 
@@ -171,6 +172,7 @@ In your `settings.json` add the following lines to get autocompletion with the T
         "C:/Program Files/Tangerine/stubs",
     ],
 ```
+Linux users will first have to extract the stubs: `/Tangerine-1.7.15.AppImage --appimage-extract usr/bin/stubs` and use `usr/bin/stubs` for the paths above.
 :::
 
 ## Hot reload of scripts
