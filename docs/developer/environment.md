@@ -11,7 +11,7 @@ The previous section explained how to run a script from within Tangerine by usin
 - Script to launch Tangerine and directly run your script:
 
 ```
-.\Tangerine.exe path_to/your_script.shot
+.\Tangerine.exe path_to/your_script.py
 ```
 
 - Script to launch Tangerine, open a shot file and call your script:
@@ -119,7 +119,7 @@ MyScripts
    +-- .venv <= Python 3.9 virtual environment where you added the debugpy module
    |
    +-- .vscode
-         |	
+         |  
          +-- launch.json
 ```
 
@@ -141,8 +141,8 @@ else:
 if sp.exists():
     site.addsitedir(str(sp))
 else:
-	raise RuntimeError("Cannot find site-packages in the venv")
-	
+    raise RuntimeError("Cannot find site-packages in the venv")
+    
 # we import debugpy from the venv above and wait for the connection
 try:
     import debugpy
@@ -203,7 +203,7 @@ main_window = get_tang_window()
 def on_clicked():
     my_edit = importlib.import_module("my_edit")
     my_edit.do_it()
-	
+    
 def show_my_tool_window():
     my_tool_widget = QWidget(main_window)
     my_tool_widget.setWindowTitle('My Tool')
