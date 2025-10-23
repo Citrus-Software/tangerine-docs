@@ -270,7 +270,7 @@ Tangerine use this mechanism to store important information in rigs. For example
 ### Plug Size
 
 Each plug can store multiple values, and it can be connected at different "indices". A "connection" in Tangerine is a pair of a plug and an index.
-You can access to the different connections via the bracket operator, let's use the same example script froma bove (in Dynamic Plugs) with a size of 6:
+You can access to the different connections via the bracket operator, let's use the same example script from above (in Dynamic Plugs) with a size of 6:
 
 ```python
 from meta_nodal_py import Node
