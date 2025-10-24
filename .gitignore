@@ -1,6 +1,11 @@
 # Node modules
 node_modules/
 
+# website local build folder
+website/
+# sample docusaurus
+docs-examples-from-docusaurus/
+
 # Docusaurus build outputs
 build/
 .docusaurus/
