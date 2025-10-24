@@ -53,7 +53,6 @@ Attributes **not** stored in the shot file:
 - `saved_file_path`: used for both shot and asset files, it's empty until a file has been saved
 - `current_frame`: that's the current frame for all viewports, you can see and edit it in the Timeline and the Curve Editor 
 - `range_start_frame`and `range_end_frame`: see right above the Timeline, that's the range of playback the animator often need to focus on.
-- `camera`: the camera set in the active viewport
 
 Example script:
 ```python

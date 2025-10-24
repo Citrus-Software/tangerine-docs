@@ -43,7 +43,7 @@ viewport.frame_view()
 
 4. Click anywhere outside the Command Line window, and press Space to play the animation. You should see this:
 
-<div align="center">![console tangerine](./img/HelloTangerine.gif)</div>
+<div align="center">![Hello Tangerine!](./img/HelloTangerine.gif)</div>
 
 <div align="center">**JB the Capy says Hello Tangerine!**</div>
 

@@ -45,7 +45,7 @@ See the command line documentation for details, and refer to the demo package fo
   <summary>Demo package command</summary>
 
     ```shell
-    "C:\Program Files\TeamTO\Tangerine\1.7.14\TangerineConsole.exe" --log_to_file --kernel release --no-gui -l debug "E:/TEMP/tangerine/Tangerine Demo 2025/hook.py" E:\work\sandbox\tang-docs\docs\runTangContainerBatch.py --firstarg --secondarg 42 --filePath "E:\TEMP\tangerine\Tangerine Demo 2025\api_samples\three_capy.shot"
+    "%INSTALL%\TangerineConsole.exe" --log_to_file --kernel release --no-gui -l debug ..\run_pipeline_script_.py --firstarg --secondarg 42 --filePath "..\api_samples\three_capy.shot"
     ```
 
     <details>
