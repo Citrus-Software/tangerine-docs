@@ -6,10 +6,11 @@ import TabItem from '@theme/TabItem';
 
 # Build Shots in Pipeline
 
+In a pipeline vision, you will need to create automations and build many shots at once.
 You can create a `Shot` object, which allows you to add all necessary attributes directly to the new object and save it to a file.
 This approach skips loading data into Tangerine when it is not needed.
 
-For example, if you want to quickly generate all `.shot` files for a sequ
+For example, if you want to quickly generate all `.shot` files for a sequence.
 
 ```python
 from tang_core.document.shot import Shot

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import os
 import sys
 
@@ -17,9 +16,9 @@ for element in " ".join(sys.argv).split(" --"):
         args[element.split(" ")[0]] = " ".join(element.split(" ")[1:])
 
 
-firstArg = args.get("[firstarg]", None)
-secondarg = args.get("[secondarg]", None)
-filePath = args.get("filePath", None)
+first_arg = args.get("[firstarg]", None)
+second_arg = args.get("[secondarg]", None)
+file_path = args.get("filePath", None)
 
 
 # Develop here depending on your needs and args. Sample opening a document and printing a list of top nodes.
@@ -29,7 +28,7 @@ from tang_core.document.shot import Shot
 from tang_core.document.get_document import get_document
 
 document = get_document()
-Shot.import_shot_files([filePath], document)
+Shot.import_shot_files([file_path], document)
 
 # listing top nodes and printing nodes full name
 nodes = document.root().get_children()

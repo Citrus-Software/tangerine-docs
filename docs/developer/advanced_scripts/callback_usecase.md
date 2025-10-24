@@ -8,12 +8,14 @@ import TabItem from '@theme/TabItem';
 # Callback Processes
 
 You can easily add custom code overrides, either using menu buttons or by specifying script paths on the command line.
+For example, you could change a version of your reference before your animator open the scene, or upload data from your asset manager into tangerine.
+You culd also need to automate some clean or checks before to save any version of the shot, or before to export it.
 
 ## Add Custom Code Around Manual Actions
 
 When you want to execute code after an action manually triggered from the UI:
 
-- Replace the native menu button with your own [(see here).](general#custom-menus)
+- Replace the native menu button with your own [(see here).](./../environment#custom-menu-and-gui)
 - Insert your custom code around the base action called by the button.
 
 Below is the code executed behind the default items.
@@ -24,7 +26,9 @@ tang_window = QApplication.instance().main_window
 ```
 
 "File > Load Shot" : `tang_window.load_shot_files()`
+
 "File > Save Shot" : `tang_window.export_shot_file()`
+
 "File > New" : `tang_window.new_document()`
 
 ## Add Custom Code Around Loading Actions
@@ -40,14 +44,14 @@ See the command line documentation for details, and refer to the demo package fo
 <details>
   <summary>Demo package command</summary>
 
-    ```
-    "C:\Program Files\TeamTO\Tangerine\1.7.14\TangerineConsole.exe" --log_to_file --kernel release --no-gui -l debug "E:/TEMP/tangerine/Tangerine Demo 2025/hook.py" E:\work\sandbox\tang-docs\docs\runTangContainerBatch.py --firstarg --secondarg 42 --filePath "E:\TEMP\tangerine\Tangerine Demo 2025\api_samples\three_capy.shot"
+    ```shell
+    "%INSTALL%\TangerineConsole.exe" --log_to_file --kernel release --no-gui -l debug ..\run_pipeline_script_.py --firstarg --secondarg 42 --filePath "..\api_samples\three_capy.shot"
     ```
 
     <details>
       <summary> Sample code for script with args</summary>
 
-        ```
+        ```python
         # -*- coding: utf-8 -*-
         import os
         import sys
@@ -66,9 +70,9 @@ See the command line documentation for details, and refer to the demo package fo
                 args[element.split(" ")[0]] = " ".join(element.split(" ")[1:])
 
 
-        firstArg = args.get("[firstarg]", None)
-        secondarg = args.get("[secondarg]", None)
-        filePath = args.get("filePath", None)
+        first_arg = args.get("[firstarg]", None)
+        second_arg = args.get("[secondarg]", None)
+        file_path = args.get("filePath", None)
 
 
         # Develop here depending on your needs and args. Sample opening a document and printing a list of top nodes.
@@ -78,7 +82,7 @@ See the command line documentation for details, and refer to the demo package fo
         from tang_core.document.get_document import get_document
 
         document = get_document()
-        Shot.import_shot_files([filePath], document)
+        Shot.import_shot_files([file_path], document)
 
         # listing top nodes and printing nodes full name
         nodes = document.root().get_children()

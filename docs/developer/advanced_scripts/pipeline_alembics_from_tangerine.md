@@ -399,7 +399,7 @@ Applying animation to our renderable meshes is done in two steps:
 Some post-processing steps may require a preroll and postroll in the Alembic file.
 
 When using the export command, you can choose a frame range that is different from the document's
-[See bake documentation.](api#export-to-alembic)
+[See bake documentation.](./../tangerine_outputs/abc_exports#export-animations-to-alembics)
 
 ```python
 bake(

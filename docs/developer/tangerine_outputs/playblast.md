@@ -51,11 +51,12 @@ document = get_document()
 
 # search for the camera node in scene you want to use for playblast
 camera = "cameras/persp/Persp"
-cameraNode = document.root().find(camera)
 
-imagePath = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_samples/playblast_folder/my_playblast_images.jpg"
+camera_node = document.root().find(camera)
 
-Playblast.playblast(document, cameraNode, imagePath, settings=playblastSettings) # see previous part to create playblast settings
+image_path = "E:/TEMP/Tangerine/Tangerine Demo 2025/api_samples/playblast_folder/my_playblast_images.jpg"
+
+Playblast.playblast(document, camera_node, image_path, settings=playblast_settings) # see previous part to create playblast settings
 ```
 
 ## Viewport subdivision
@@ -70,9 +71,9 @@ from tang_core.document.get_document import get_document
 document = get_document()
 
 # choose subdivision value, ON = full smooth value, HALF_LEVEL = Half the smooth value, OFF = not smoothed at all
-subdivOverride = SubdivisionOverride.ON
+subdiv_override = SubdivisionOverride.ON
 with document.modify("subdiv_override") as modifier:
-    set_general_subdivision_override(subdivOverride, modifier)
+  set_general_subdivision_override(subdiv_override, modifier)
 ```
 
 You can see level of subdivision applied, in plugs view selecting a mesh.
@@ -89,11 +90,11 @@ from tang_core.document.get_document import get_document
 
 document = get_document()
 
-subdivOverride = SubdivisionOverride.OFF  # ON = full smooth value, HALF_LEVEL = Half the smooth value, OFF = not smoothed at all
+subdiv_override = SubdivisionOverride.OFF  # ON = full smooth value, HALF_LEVEL = Half the smooth value, OFF = not smoothed at all
 
 mesh = [YOUR_NODE] # node of type Geometry
 with document.modify("subdiv_override") as modifier:
-    set_subdivision_override(mesh, subdivOverride, modifier)
+  set_subdivision_override(mesh, subdiv_override, modifier)
 
 ```
   </TabItem>
@@ -106,28 +107,29 @@ from PySide2.QtWidgets import QApplication
 from meta_nodal_py import Geometry
 
 # opening scene
-DEMO_FOLDER_PATH = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
-filePath = DEMO_FOLDER_PATH + "/api_samples/three_capy.shot" # shot file
+
+demo_folder_path = "E:/TEMP/Tangerine/Tangerine Demo 2025/"
+file_path = demo_folder_path + "/api_samples/three_capy.shot" # shot file
 app = QApplication.instance()
-app.main_window.import_shot_files([filePath], load_mode=AssetLoadMode.ALL)
+app.main_window.import_shot_files([file_path], load_mode=AssetLoadMode.ALL)
 
 document = get_document()
 
 # set full subdivision on all meshs of the scene
-subdivOverride = SubdivisionOverride.ON
+subdiv_override = SubdivisionOverride.ON
 with document.modify("subdiv_override") as modifier:
-    set_general_subdivision_override(subdivOverride, modifier)
+  set_general_subdivision_override(subdiv_override, modifier)
 
 # set OFF subdivision on set hierarchy
-assetNode = document.root().find("set_n01_white_neutral_int:white_neutral_int")
-# listing Geometry nodes in assetNode hierarchy
-subdivOverride = SubdivisionOverride.OFF  # ON = full smooth value, HALF_LEVEL = Half the smooth value, OFF = not smoothed at all
+asset_node = document.root().find("set_n01_white_neutral_int:white_neutral_int")
+# listing Geometry nodes in asset_node hierarchy
+subdiv_override = SubdivisionOverride.OFF  # ON = full smooth value, HALF_LEVEL = Half the smooth value, OFF = not smoothed at all
 with document.modify("subdiv_override") as modifier:
-    for it in assetNode.depth_first_skippable_iterator():
-        node = it.node
-        if isinstance(node, Geometry):
-            print(node.get_name())
-            set_subdivision_override(node, subdivOverride, modifier)
+  for it in asset_node.depth_first_skippable_iterator():
+    node = it.node
+    if isinstance(node, Geometry):
+      print(node.get_name())
+      set_subdivision_override(node, subdiv_override, modifier)
 ```
   </TabItem>
 </Tabs>
