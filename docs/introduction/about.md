@@ -1,46 +1,69 @@
 ---
-sidebar_label: About Tangerine
+sidebar_label: Welcome!
 sidebar_position: 1
 ---
 
 # Tangerine Documentation
 
-Welcome to the Tangerine documentation. This project aims to provide key to Animate in Tangerine, and a flexible Python framework for pipeline and automations around Tangerine.
+**Welcome to Tangerine, and thank you for your trust!** We promise you won't be disappointed. You'll see, we've done everything to make you feel right at home. With Tangerine, we didn't want to build a general-purpose 3D app, but **a tool dedicated to animation**. Our goal is to create a little paradise for animators, with features crafted specifically for them. Many of these features are common — the classics of the animation toolkit — while others are completely new, developed by professional animation teams inside a studio over several years. We hope you'll love them too!
 
-## What is Tangerine
+**Tangerine is your tool as well**, because we take the best ideas wherever they come from — not just from the original studio — so please feel free to share your suggestions. We're always listening on our Discord server. Whether you have a question, need tech support, or just want to talk animation in general, come say Hi! **Animation is the passion that brings us together!**
 
-**Tangerine** is a purpose‑built real‑time animation engine engineered to sustain a true 24 FPS in even the most complex, multi‑character scenes.
-It combines GPU‑accelerated skinning, just‑in‑time shader compilation, and predictive motion interpolation to deliver immediate, frame‑accurate feedback—eliminating the need for playblasts.
+## Performance above all
 
-Built with a modular plugin architecture and a full Python API, Tangerine slots into existing pipelines and provides detailed performance profiling at every stage of your production.
+Before we introduce our animation tools, let's talk performance because long before animators asked for new features, production teams were dreaming of a fast, real-time solution. Getting instant feedback from the software, editing with perfect smoothness, that was the number-one request! So **we pushed the limits** of current solutions as far as we could. Here are the results:
 
-**Tangerine** is the animation tools thats meets animator's confort and performances.
+Compared to any other software:
+- Tangerine supports 5–7× more characters on screen while maintaining **24 fps playback (say goodbye to playblasts!)** 
+- Tangerine lets you have 5–8× more assets in a shot while keeping **interaction smooth**
 
-### Key Concepts
+There's no magic. To reach this level of performance, Tangerine uses a *Frame Cache*: on every frame, all the assets that make up the shot have their rigs evaluated and stored in a cache. Modern tools all use caching, but Tangerine's results come from deeply optimized cache management, which brings us to the last performance point…
 
-to come
+After an interaction, computing the cache creates a period during which 24 fps playback isn't possible. You need to wait a bit before playing the animation to see your edit take effect. This downtime grows with rig complexity (number of evaluations). In Tangerine, it's almost nonexistent (about 0.25 to 0.8 seconds), while in other software it's a significant cost (several seconds!).
+Tangerine therefore feels nearly instantaneous, delivering a uniquely fluid workflow. Choppy animation work is over, **the interaction lag is gone!**
 
-## Workflow
+Thanks not only to its dedicated animation tools but also to its unmatched performance, 72 hours of animation were produced in 5 years with Tangerine—352 episodes across 10 series.
 
-Tangerine uses rigs built with [**Mikan**](https://www.citrus-software.com/mikan) rigging toolbox in a .tang file format.
-Animators work in Tangerine a **Shot** and save in it a .shot file.
-As they work, they can play the animation at 24 fps just clicking the space bar.
+**Fast. Dedicated. Proven.** These are Tangerine's three pillars.
 
-As needed, you can export from they work :
-    - Playblasts
-    - Alembic files
-    - Usd files
+## Features Overview
 
-This workflow makes it efficient and confortable for the Animator to focus on the animation.
-References of assets and Mikan usage as a rig builder also helps to update, raise-up production line fluidity between in a production.
+Timeline, Curve Editor, Layers and Channels are the basics, any animator would need them and Tangerine offers them of course! So here are some rare features that makes Tangerine truly unique, the little paradise for animators, but the real thing is that: **Tangerine is more than the sum of its parts**. Indeed, in Tangerine there is **no external plugins dependence**, so each features can go beyond what you usually find: the Asset Manager can check for constraint-dependencies in assets unload, the Library pose and animation clips can embark constraints between assets, etc. External plugins rarely talk to each other, this is the major drawback of plugin-based architectures, Tangerine can go beyond because its **features are all native and thus can embrace a synchronized logic**.
 
-## Pipeline Integration
+- **Per-viewport display Tags**
+- **Smart Asset Manager**
+- **Supercharged Library**
+- **Awesome Motion Trail**
+- **Frame-accurate Dynamics**
+- **Constraints as simple as saying "Take" or "Drop"**
+- **Flip/mirror Poses/Anims, IK/FK Switch, Space Switches...**
+- **Shader Checkers**
+- **Blocking Mode**
+- **Fix Anim with Clusters**
+- **Crowd Assets** with baked animation clips
 
-Once the animation is done in Tangerine, you will be able to export data into alembic files or usd files.
-These formats allows you to get your animations loaded in other softwares of the industry for rendering, simulating or anything else such as Houdini, Maya, Nuke.
+WIP 🚧
 
-Project configuration
+## The Perfect Workflow
 
-Possibility to develop with API
+Get the most of best worlds:
 
-Menu additional possible
+### 1. Rig in Maya
+
+with our Open Source solution
+
+WIP 🚧
+
+### 2. Animate in Tangerine
+
+Layout, shortcuts, but also full Python scripting to develop your own animation specific tool or for pipeline integration! See the Developer Guide.
+Playblasts for validation from the animation supervisor or the movie director, but don't playblast all the day long for yourself thanks to the 24 fps playback of Tangerine!
+
+WIP 🚧
+
+### 3. Export to Alembic or USD
+
+ to FX and Render departments
+
+WIP 🚧
+ 

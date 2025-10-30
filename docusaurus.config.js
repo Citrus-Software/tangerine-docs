@@ -10,8 +10,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Tangerine Animation Framework",
-  tagline: "Capybara powered",
+  title: "Tangerine Documentation",
   favicon: "img/favicon.ico",
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
@@ -82,7 +81,6 @@ const config = {
       // Replace with your project's social card
       //image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: "Tangerine",
         logo: {
           alt: "Tangerine Logo",
           src: "img/logo.svg",
@@ -92,7 +90,7 @@ const config = {
             type: "docSidebar",
             sidebarId: "tutorialSidebar",
             position: "left",
-            label: "Docs",
+            label: "Tangerine Documentation",
           },
 
           //{ to: "/blog", label: "Blog", position: "left" },
@@ -104,17 +102,8 @@ const config = {
         ],
       },
       footer: {
-        style: "dark",
+        // style: "dark",
         links: [
-          {
-            title: "Docs",
-            items: [
-              {
-                label: "About",
-                to: "/introduction/about",
-              },
-            ],
-          },
           {
             title: "Citrus software",
             items: [
@@ -130,10 +119,6 @@ const config = {
           },
         ],
         copyright: `Copyright © ${new Date().getFullYear()} TeamTO Technology. Built with Docusaurus.`,
-      },
-      prism: {
-        theme: prismThemes.oneLight,
-        darkTheme: prismThemes.palenight,
       },
     }),
 };
