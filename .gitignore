@@ -1,10 +1,8 @@
 # Node modules
 node_modules/
-
-# website local build folder
-website/
-# sample docusaurus
-docs-examples-from-docusaurus/
+# The project uses yarn (yarn.lock): no npm/pnpm lockfiles
+package-lock.json
+pnpm-lock.yaml
 
 # Docusaurus build outputs
 build/
@@ -25,7 +23,7 @@ Thumbs.db
 .env.local
 .env.*.local
 
-# VSCode settings (optionnel, si tu veux pas versionner ton éditeur)
+# VSCode settings
 .vscode/
 
 # Mac system files

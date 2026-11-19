@@ -8,10 +8,11 @@ publish_main:
   variables:
     REPO: git@gitlab.teamto.fr:$CI_PROJECT_PATH.git
     GIT_SSH_COMMAND: ssh -i $DEPLOY_KEY -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
+    MESSAGE: "Update documentation"  # can be overridden when running the manual job
   script:
     - chmod 600 "$DEPLOY_KEY"
     - git fetch "$REPO" main
     - git checkout -B main FETCH_HEAD
     - git read-tree -u --reset $CI_COMMIT_SHA
-    - git -c user.name="Tangerine Docs" -c user.email="noreply@teamto.fr" commit -m "Update documentation"
+    - git -c user.name="Tangerine Docs" -c user.email="noreply@teamto.fr" commit -m "$MESSAGE"
     - git push "$REPO" main

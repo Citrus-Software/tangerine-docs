@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: write # push the built site to the gh-pages branch
+
+concurrency:
+  group: deploy-gh-pages
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -11,18 +19,21 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
-          node-version: 18
+          node-version-file: .nvmrc
+
+      - name: Install Yarn
+        run: npm install -g yarn@1.22.22
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install --frozen-lockfile
 
       - name: Build website
-        run: npm run build
+        run: yarn build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

@@ -31,7 +31,18 @@ const config = {
   trailingSlash: false,
 
   onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
+  markdown: {
+    // future.v4 disables MDX1 compat by default. The release notes rely on
+    // HTML comments (<!-- -->) and explicit heading ids ({#v1-8-5}, used by
+    // the version permalinks), so keep both enabled.
+    mdx1Compat: {
+      comments: true,
+      headingIds: true,
+    },
+    hooks: {
+      onBrokenMarkdownLinks: "warn",
+    },
+  },
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you

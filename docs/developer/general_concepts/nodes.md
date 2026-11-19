@@ -34,7 +34,7 @@ print(B.output.get_value())  # prints 0.0
 Imagine now dozens, hundreds and thousands of such nodes interconnected in a giant graph. This is how rigs are made, and this defines the **Node Graph** of Tangerine. Of course, here the Add node is very simple, it just computes the addition of its float input values. But values can be Meshes, 3D Vertices, Matrices, Splines, and node functions can be more complex than just an addition: we have nodes for IK, Skinning and Lattice deformers, etc. Tangerine offers all the nodes needed to define a complete 3D rig.
 
 :::warning
-You can't create a cycle in Tangerine: the output of a node cannot be connected to the inputs of its dependencies. It means in the example above, you cannot do: `A.input1.connect(B.output)`. Tou can check that with `A.input1.can_connect(B.output)` which returns `False` here.
+You can't create a cycle in Tangerine: the output of a node cannot be connected to the inputs of its dependencies. It means in the example above, you cannot do: `A.input1.connect(B.output)`. You can check that with `A.input1.can_connect(B.output)` which returns `False` here.
 :::
 
 ## Visualizing the Node Graph
