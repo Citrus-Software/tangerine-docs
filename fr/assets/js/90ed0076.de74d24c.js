@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunktang_docs=self.webpackChunktang_docs||[]).push([["441"],{9188(e){e.exports=JSON.parse('{"metadata":{"permalink":"/tangerine-docs/fr/blog","page":1,"postsPerPage":10,"totalPages":1,"totalCount":0,"blogDescription":"Blog","blogTitle":"Blog"}}')}}]);
