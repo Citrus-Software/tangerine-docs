@@ -1,4 +1,10 @@
-# Website
+# Tangerine Docs
+
+<p align="center">
+  <a href="https://citrus-software.github.io/tangerine-docs">
+    <img src="https://img.shields.io/website?url=https%3A%2F%2Fcitrus-software.github.io%2Ftangerine-docs&label=%F0%9F%93%96%20View%20Live%20Documentation&up_message=citrus-software.github.io%2Ftangerine-docs&down_message=offline&style=for-the-badge" alt="View Live Documentation" />
+  </a>
+</p>
 
 This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
 

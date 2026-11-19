@@ -41,6 +41,38 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
+/* Reduce the gap between the navbar logo and the first navbar item */
+.navbar__logo {
+  margin-right: 0.5rem;
+}
+
+.navbar__brand {
+  margin-right: 0;
+}
+
+.navbar__brand + .navbar__item {
+  padding-left: 0;
+  color: var(--ifm-menu-color);
+  font-weight: var(--ifm-font-weight-bold);
+}
+
+/*
+ * Pick ONE (A or B) to keep the same text/logo proportion as Mikan:
+ * our logo is taller than theirs, so either enlarge the text or shrink the logo.
+ */
+
+/* A: bigger text, full-size logo */
+/* .navbar__brand + .navbar__item {
+  font-size: 1.8rem;
+  line-height: 1;
+} */
+
+/* B: default text size, smaller logo */
+.navbar__logo {
+  box-sizing: border-box;
+  padding: 0.3rem 0;
+}
+
 .theme-doc-sidebar-item-link.hide-from-sidebar {
   display: none;
 }

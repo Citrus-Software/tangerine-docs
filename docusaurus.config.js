@@ -38,7 +38,19 @@ const config = {
   // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: "en",
-    locales: ["en"],
+    locales: ["en", "fr"],
+    localeConfigs: {
+      en: { label: "English", htmlLang: "en-US" },
+      fr: { label: "Français", htmlLang: "fr-FR" },
+    },
+  },
+
+  customFields: {
+    // Pages that have a French translation in i18n/fr/.../current/.
+    // The language switcher is only shown on these (see
+    // src/theme/NavbarItem/LocaleDropdownNavbarItem). Paths are relative to the
+    // site root, without locale prefix nor trailing slash.
+    translatedPages: ["/usage/release_notes"],
   },
 
   presets: [
@@ -71,6 +83,11 @@ const config = {
         theme: {
           customCss: "./src/css/custom.css",
         },
+
+        // /go is the software's permalink (redirect only): keep it out of search.
+        sitemap: {
+          ignorePatterns: ["/go", "/fr/go"],
+        },
       }),
     ],
   ],
@@ -90,8 +107,9 @@ const config = {
             type: "docSidebar",
             sidebarId: "tutorialSidebar",
             position: "left",
-            label: "Tangerine Documentation",
+            label: "Tangerine",
           },
+          { type: "localeDropdown", position: "right" },
 
           //{ to: "/blog", label: "Blog", position: "left" },
           //{

@@ -42,6 +42,18 @@ You will possibly need an environment for your studio, a given production or a g
 
 To do so, use the `TANG_ENV_PATH` environment variable on your system to define the path of a `user_setup.py` file.
 This file will be executing at every launch of Tangerine, before executing another command.
+You may have multiple paths in `TANG_ENV_PATH`, separated with semicolons.
+
+:::important
+When providing one or more user_setup.py file(s) you are responsible to load Mikan.
+You may just want to load the version of Mikan which is installed along with Tangerine by calling:
+```python
+import sys
+from importlib import import_module
+sys.append("")  # the working dir is the Tangerine install path
+import_module("mikan_hook")  # this is our internal script that gets mikan loaded (it takes TANG_MIKAN_PATH into account)
+```
+:::
 
 ## Custom menu and GUI
 
@@ -100,7 +112,6 @@ Then, set this configuration in your `launch.json` file:
             "type": "debugpy",
             "name": "Attach Tangerine App",
             "request": "attach",
-            "processId": "${command:pickProcess}",
             "connect": { "host": "127.0.0.1", "port": 5678 },
             "justMyCode": false
         }
@@ -149,6 +160,11 @@ try:
     import debugpy
 except ImportError:
     raise RuntimeError("debugpy is not installed in the venv")
+if os.name == "nt":
+    py = venv / "Scripts" / "python.exe"
+else:
+    py = venv / "bin" / "python3"
+debugpy.configure(python=str(py))
 debugpy.listen(("127.0.0.1", 5678))
 debugpy.wait_for_client()
 ```
@@ -158,7 +174,7 @@ Then, launch Tangerine with this new script **first**:
 .\TangerineConsole.exe C:\MyScripts\wait_debug.py C:\MyScripts\my_tool.py
 ```
 
-In VS Code, set a breakpoint anywhere in `my_tool.py`, launch "Attach Tangerine App" and select the Tangerine process in the dropdown menu. You should break on the breakpoint!
+In VS Code, set a breakpoint anywhere in `my_tool.py`, launch "Attach Tangerine App". You should break on the breakpoint!
 
 :::tip
 **Aucompletion in VS Code!**
@@ -172,7 +188,7 @@ In your `settings.json` add the following lines to get autocompletion with the T
         "C:/Program Files/Tangerine/stubs",
     ],
 ```
-Linux users will first have to extract the stubs: `/Tangerine-1.7.15.AppImage --appimage-extract usr/bin/stubs` and use `usr/bin/stubs` for the paths above.
+Linux users will first have to extract the stubs: `/Tangerine-1.7.16.AppImage --appimage-extract usr/bin/stubs` and use `usr/bin/stubs` for the paths above.
 :::
 
 ## Hot reload of scripts

@@ -189,6 +189,14 @@ for node in document.root().get_children():
         print("the following asset is loaded: " + node.get_name())
 ```
 
+There is a quicker way to get the list of all asset nodes belonging to loaded asset: `asset_nodes = list(Asset.loaded_assets(document))`.
+
+And for unloaded assets: `unloaded_asset_nodes = list(Asset.unloaded_assets(document))`, nodes in this list have no children and cannot be used with animation tools and scripts until the belonging assets are loaded again.
+
+If you don't care about the loading state, just call: `all_asset_nodes = list(Asset.asset_nodes(document))`.
+
+Note you may iterate directly over the result of all these Asset functions without creating an intermediate list.
+
 :::info
 **The Mikan Link**
 
@@ -270,7 +278,7 @@ The simplest nodes are nodes that works on simple or vector values to make math 
 - Common deformers: BlendShape, Skin, DualQuatSkin
 - Non-linear deformers: Bend, Cluster, Flare, Freeform, ShrinkWrap, Sine, Twist, Wave, Wire, Squash
 
-#### Constraints Nodes
+#### Constraint Nodes
 
 We have two kind of constraints nodes:
 

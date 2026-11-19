@@ -1,0 +1,17 @@
+# Publish the doc: main becomes an exact copy of develop, in a single new commit (no merge, no develop history).
+# Needs the CI/CD variable DEPLOY_KEY (type File): private key of a deploy key allowed to push on main.
+publish_main:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop"
+      when: manual
+  variables:
+    REPO: git@gitlab.teamto.fr:$CI_PROJECT_PATH.git
+    GIT_SSH_COMMAND: ssh -i $DEPLOY_KEY -o IdentitiesOnly=yes -o StrictHostKeyChecking=no
+  script:
+    - chmod 600 "$DEPLOY_KEY"
+    - git fetch "$REPO" main
+    - git checkout -B main FETCH_HEAD
+    - git read-tree -u --reset $CI_COMMIT_SHA
+    - git -c user.name="Tangerine Docs" -c user.email="noreply@teamto.fr" commit -m "Update documentation"
+    - git push "$REPO" main

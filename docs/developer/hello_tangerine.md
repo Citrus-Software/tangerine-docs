@@ -6,7 +6,7 @@ import TabItem from '@theme/TabItem';
 
 # Hello Tangerine
 
-**Welcome to the Tangerine Developer Guide!** This part of the Tangerine documentation is intended to **Python developers**. With its scripting API, Tangerine allows you to develop custom Animation Tools, Pipeline scripts, Shot and Asset build scripts, and more! Here is our Hello Tangerine script, a quick start to jump straight into Tangerine Python development:
+**Welcome to the Tangerine Developer Guide!** This part of the Tangerine documentation is intended to **Python and C++ developers**. With its Python scripting API, Tangerine allows you to develop custom Animation Tools, Pipeline scripts, Shot and Asset build scripts, and more! With the Tangerine C++ SDK, you can create custom nodes and deformers. Here is our Hello Tangerine script, a quick start to jump straight into Tangerine Python development:
 
 1. Launch Tangerine
 
